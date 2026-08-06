@@ -6,7 +6,7 @@ def get_ai_closer_response(customer_input, history_str):
         api_key = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=api_key)
         
-        # استخدام نموذج gemini-1.5-flash المستقر حصرياً
+        # استخدام النموذج المستقر مع النسخة المحدثة
         model = genai.GenerativeModel('gemini-1.5-flash')
         
         system_instruction = "أنت وكيل مبيعات محترف ومغلق صفقات خبير لنظام GrowthEngine الذي يقدم (AI Lead Generation & Sales Closer Engine) بسعر 2000 دولار. هدفك الرد باحترافية وإقناع العميل وإغلاق الصفقة."
