@@ -1,21 +1,23 @@
-import pandas as pd
+# outreach.py
+import csv
+from offer_config import OFFER_DETAILS
 
-def simulate_outreach():
-    print("Initializing automated outreach & appointment setting engine...")
+def launch_outbound_campaign():
+    filename = "leads.csv"
     try:
-        # قراءة ملف العملاء المصفين
-        df = pd.read_csv("leads.csv")
-        active_leads = df[df["Status"] == "Active"]
-        
-        print(f"Found {len(active_leads)} high-value active targets. Launching outreach...")
-        
-        # محاكاة إرسال رسائل التواصل وحجز المواعيد تلقائياً
-        for index, row in active_leads.iterrows():
-            print(f" [OUTREACH SUCCESS] Sent tailored pitch to -> {row['Lead_Name']} | Value: {row['Value']}")
+        with open(filename, mode='r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            print(f"[*] Starting Outbound Campaign for Offer: {OFFER_DETAILS['service_name']} (${OFFER_DETAILS['price_usd']})\n")
             
-        print("All automated outreach sequences completed successfully!")
-    except Exception as e:
-        print(f"Error in outreach engine: {e}")
+            for row in reader:
+                print(f"[>] Sending pitch to: {row['name']} ({row['email']}) [Niche: {row['niche']}]")
+                # محاكاة إرسال البريد التسويقي الآلي
+                print(f"    -> Message: 'Hi {row['name']}, we can automate your sales with our AI engine for ${OFFER_DETAILS['price_usd']}. Let's scale!'")
+                print("    [V] Status: Sent Successfully!\n")
+                
+        print("[+] All outbound campaigns executed successfully! Pipeline ready for payment collection.")
+    except FileNotFoundError:
+        print("[-] Error: leads.csv not found. Please run scraper.py first.")
 
 if __name__ == "__main__":
-    simulate_outreach()
+    launch_outbound_campaign()

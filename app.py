@@ -1,36 +1,58 @@
-import os
+# app.py
+import streamlit as st
+import db_manager
+import offer_config
+import scraper
+import outreach
+import payment_gateway
+import pandas as pd
 
-def main_menu():
-    while True:
-        print("\n" + "=" * 50)
-        print("🚀 GrowthEngine Master Control Center")
-        print("=" * 50)
-        print("1. Run Full Pipeline")
-        print("2. Search & Query Database")
-        print("3. Financial Analytics & Reports")
-        print("4. Export Executive Report")
-        print("5. Exit System")
-        print("=" * 50)
+st.set_page_config(page_title="GrowthEngine Web Dashboard", page_icon="🚀", layout="wide")
 
-        choice = input("Enter your choice (1 to 5): ").strip()
+st.title("🚀 GrowthEngine Master Control Center - Web Dashboard")
+st.markdown(f"### 💡 Active Offer: `{offer_config.OFFER_TITLE}` | Price: **${offer_config.OFFER_PRICE} USD**")
 
-        if choice == '1':
-            print("\n--- Running Full Pipeline ---")
-            os.system("python main.py")
-        elif choice == '2':
-            print("\n--- Opening Search Engine ---")
-            os.system("python search.py")
-        elif choice == '3':
-            print("\n--- Calculating Financial Analytics ---")
-            os.system("python analytics.py")
-        elif choice == '4':
-            print("\n--- Exporting Executive Report ---")
-            os.system("python reports.py")
-        elif choice == '5':
-            print("\nExiting system. Goodbye!")
-            break
-        else:
-            print("❌ Invalid choice. Please enter a number between 1 and 5.")
+# القائمة الجانبية للتحكم
+st.sidebar.header("🎛️ Navigation Panel")
+choice = st.sidebar.radio("Select Operation", [
+    "📊 Database & Leads", 
+    "⚡ Run Full Pipeline", 
+    "💰 Financial Analytics"
+])
 
-if __name__ == "__main__":
-    main_menu()
+if choice == "📊 Database & Leads":
+    st.subheader("📋 Live SQLite Database Records")
+    rows = db_manager.get_all_leads()
+    if rows:
+        df = pd.DataFrame(rows, columns=["ID", "Name", "Email", "Niche", "Status"])
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.warning("[-] Database is empty. Run the pipeline from the sidebar first.")
+
+elif choice == "⚡ Run Full Pipeline":
+    st.subheader("⚙️ Automated Empire Pipeline Execution")
+    if st.button("🚀 Launch Full Pipeline Now"):
+        with st.spinner("Executing pipeline (Scraping -> Outreach -> Collection)..."):
+            scraper.generate_target_leads()
+            outreach.launch_outbound_campaign()
+            payment_gateway.process_incoming_payments()
+        st.success("🌟 Full Pipeline Completed Successfully! Database and Revenue Updated!")
+
+elif choice == "💰 Financial Analytics":
+    st.subheader("💎 Executive Financial & Performance Metrics")
+    rows = db_manager.get_all_leads()
+    if rows:
+        total_clients = len(rows)
+        paid_clients = sum(1 for r in rows if r[4] == 'Paid')
+        revenue = paid_clients * 2000
+        pipeline = total_clients * 2000
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Target Leads", total_clients)
+        col2.metric("Secured Paid Clients", paid_clients)
+        col3.metric("Total Revenue Generated", f"${revenue:,} USD")
+        
+        st.markdown("---")
+        st.bar_chart(pd.DataFrame({"Revenue": [revenue]}, index=["GrowthEngine V1"]))
+    else:
+        st.warning("[-] No data found to calculate analytics.")

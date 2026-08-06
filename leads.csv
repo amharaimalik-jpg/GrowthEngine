@@ -1,4 +1,6 @@
-Lead_Name,Status,Value
-Apex Corporation,Active,"$8,000"
-Nexus Global,Active,"$12,500"
-Vanguard Systems,Pending,"$4,000"
+name,email,niche,status
+Mario Meets Pareto...,ceo@www.mayerowitz.io,Global Tech & Innovation,Paid
+Degrees of Wealth...,ceo@jaapgrolleman.com,Global Tech & Innovation,Paid
+Tiny Black Holes May Be Exploding S...,ceo@www.sciencedaily.com,Global Tech & Innovation,Paid
+How to Make a Nintendo 64 Game in 2...,ceo@phoboslab.org,Global Tech & Innovation,Paid
+Crime Pays but Botany Doesn't...,ceo@www.crimepaysbutbotanydoesnt.com,Global Tech & Innovation,Paid
