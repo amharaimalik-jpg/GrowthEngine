@@ -2,16 +2,17 @@ import os
 import streamlit as st
 from openai import OpenAI
 
-if "OPENAI_API_KEY" in st.secrets:
-    # تنظيف المفتاح تلقائياً وحذف أي أسطر أو مسافات خفية قد تنتج عن اللصق
-    raw_key = str(st.secrets["OPENAI_API_KEY"])
-    clean_key = "".join(raw_key.split())
-    os.environ["OPENAI_API_KEY"] = clean_key
-
-client = OpenAI()
-
 def get_ai_closer_response(customer_input, history_str):
     try:
+        # تنظيف وقراءة المفتاح المحدث في كل طلب لتجنب أي تخزين مؤقت للقديم
+        if "OPENAI_API_KEY" in st.secrets:
+            raw_key = str(st.secrets["OPENAI_API_KEY"])
+            clean_key = "".join(raw_key.split())
+            os.environ["OPENAI_API_KEY"] = clean_key
+        
+        # إنشاء العميل محلياً ليستخدم المفتاح الجديد فوراً
+        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
