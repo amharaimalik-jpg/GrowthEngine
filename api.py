@@ -2,9 +2,11 @@ import os
 import streamlit as st
 from openai import OpenAI
 
-# تعيين المفتاح من أسرار ستريمليت إلى بيئة النظام ليقرأه عميل أوبن إيه آي تلقائياً
 if "OPENAI_API_KEY" in st.secrets:
-    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+    # تنظيف المفتاح تلقائياً وحذف أي أسطر أو مسافات خفية قد تنتج عن اللصق
+    raw_key = str(st.secrets["OPENAI_API_KEY"])
+    clean_key = "".join(raw_key.split())
+    os.environ["OPENAI_API_KEY"] = clean_key
 
 client = OpenAI()
 
