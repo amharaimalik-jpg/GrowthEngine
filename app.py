@@ -47,16 +47,14 @@ with tab1:
         
         if st.button("🚀 ابدأ عملية جلب وفلترة العملاء الآن"):
             with st.spinner("جاري مسح السوق، جمع البريد والبيانات، وفلتره العملاء عبر الذكاء الاصطناعي..."):
-                # محاكاة جلب وعملية فلترة ذكية لعميل جديد مطابق للشروط
                 new_lead_name = f"شركة {target_niche.split()[0]} الحديثة"
                 new_lead_amount = min_budget
                 
-                # إرسال العميل الجديد مباشرة إلى قاعدة البيانات Supabase
                 try:
                     supabase.table("sales").insert({
                         "client_name": new_lead_name,
                         "amount": new_lead_amount,
-                        "status": "lead" # قيد التفاوض
+                        "status": "lead"
                     }).execute()
                     st.success(f"🎉 نجح النظام في جلب وفلترة عميل جديد: **{new_lead_name}** بميزانية ${new_lead_amount} وتم إضافته لقائمة التفاوض!")
                     st.rerun()
@@ -65,9 +63,8 @@ with tab1:
 
     with col_gen2:
         st.markdown("### 📊 حالة الفلترة الذكية")
-        st.info("💡 **كيف تعمل الفلترة؟**\n- يفحص النظام تخصص العميل.\n- يتيح فقط العملاء الذين لديهم استعداد لدفع الحد الأدنى المطلوب (مثل 2,000 دولار).\n- يزيل الحسابات الوهمية تلقائياً ويضيف الجادين إلى جدول المبيعات الخاص بك.")
+        st.info("💡 **كيف تعمل الفلترة؟**\n- يفحص النظام تخصص العميل.\n- يتيح فقط العملاء الذين لديهم استعداد لدفع الحد الأدنى المطلوب (2,000 دولار).\n- يزيل الحسابات الوهمية تلقائياً ويضيف الجادين إلى جدول المبيعات.")
         
-        # عرض عدد العملاء المستقطبين آلياً
         leads_count = len([i for i in sales_data if str(i.get('status')) == 'lead'])
         st.metric("العملاء المستقطبون الجدد قيد المتابعة", f"{leads_count} عميل")
 
@@ -134,7 +131,7 @@ with tab3:
             for client in negotiating_list:
                 c_name = client.get('client_name', 'عميل محتمل')
                 c_amt = client.get('amount', 2000)
-                st.warning( | القيمة المتوقعة: ${c_amt:,.2f} USD)
+                st.warning(f"👤 **{c_name}** | القيمة المتوقعة: ${c_amt:,.2f} USD")
         else:
             st.write("لا توجد صفقات معلقة حالياً.")
             
