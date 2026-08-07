@@ -6,8 +6,17 @@ def get_ai_closer_response(customer_input, history_str):
         api_key = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=api_key)
         
-        # استخدام نموذج gemini-pro المعتمد والمستقر على جميع المفاتيح
-        model = genai.GenerativeModel('gemini-pro')
+        # البحث التلقائي عن أي نموذج مدعوم في حسابك لمنع أخطاء 404 نهائياً
+        target_model = None
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                target_model = m.name
+                break
+        
+        if not target_model:
+            target_model = 'gemini-1.5-flash'
+            
+        model = genai.GenerativeModel(target_model)
         
         system_instruction = "أنت وكيل مبيعات محترف ومغلق صفقات خبير لنظام GrowthEngine الذي يقدم (AI Lead Generation & Sales Closer Engine) بسعر 2000 دولار. هدفك الرد باحترافية وإقناع العميل وإغلاق الصفقة."
         
