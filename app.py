@@ -10,8 +10,6 @@ url = re.sub(r'[\s"\'`]', '', raw_url)
 key = re.sub(r'[\s"\'`]', '', raw_key)
 
 supabase = create_client(url, key)
-
-# التصحيح هنا: استخدام شرطة سفلي _ بدلاً من النقطة .
 stripe.api_key = st.secrets.get("STRIPE_API_KEY", "")
 
 # تصميم التبويبات الرئيسية للتطبيق
@@ -60,7 +58,16 @@ with tab3:
     except Exception as e:
         sales_data = []
     
-    total_sales = sum(float(item.get('amount', 0)) for item in sales_data) if sales_data else 0
+    # المعالجة الآمنة للقيم لضمان عدم حدوث خطأ إذا كانت الحقول فارغة
+    total_sales = 0
+    for item in sales_data:
+        val = item.get('amount')
+        if val is not None:
+            try:
+                total_sales += float(val)
+            except:
+                pass
+                
     total_deals = len(sales_data) if sales_data else 0
     
     col1, col2 = st.columns(2)
