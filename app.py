@@ -1,26 +1,25 @@
 import streamlit as st
 from supabase import create_client
 
-# 1. الاتصال بقاعدة البيانات باستخدام المفاتيح التي حفظناها
+# 1. الاتصال بقاعدة البيانات
 supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
-# 2. دالة لجلب البيانات من الجدول
 def get_real_sales_data():
     try:
-        # جلب كل البيانات من جدول sales
         response = supabase.table("sales").select("*").execute()
         return response.data
     except Exception as e:
         return []
 
-# 3. عرض البيانات في الواجهة
+# 2. تعريف التبويبات (تأكد من وجود هذا السطر قبل استخدام tab3)
+tab1, tab2, tab3 = st.tabs(["الرئيسية", "العملاء", "المالية"])
+
+# 3. عرض البيانات داخل التبويب الثالث
 with tab3:
     st.subheader("💳 لوحة المالية الحقيقية")
     
-    # جلب البيانات
     sales_data = get_real_sales_data()
     
-    # حساب الأرقام (إذا لم توجد بيانات، تكون الأصفار هي الافتراضية)
     if sales_data:
         total_sales = sum(float(item.get('amount', 0)) for item in sales_data)
         total_deals = len(sales_data)
