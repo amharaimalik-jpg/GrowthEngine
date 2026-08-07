@@ -7,14 +7,15 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 def get_real_sales_data():
     try:
         response = supabase.table("sales").select("*").execute()
+        # عرض البيانات الخام على الشاشة لنراها بوضوح
+        st.write("البيانات المسترجعة من القاعدة:", response.data)
         return response.data
     except Exception as e:
+        st.error(f"حدث خطأ أثناء الاتصال: {e}")
         return []
 
-# 2. تعريف التبويبات (تأكد من وجود هذا السطر قبل استخدام tab3)
 tab1, tab2, tab3 = st.tabs(["الرئيسية", "العملاء", "المالية"])
 
-# 3. عرض البيانات داخل التبويب الثالث
 with tab3:
     st.subheader("💳 لوحة المالية الحقيقية")
     
