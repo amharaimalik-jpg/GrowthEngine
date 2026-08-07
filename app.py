@@ -54,11 +54,13 @@ with tab3:
     sales_data = []
     try:
         res = supabase.table("sales").select("*").execute()
-        sales_data = res.data if res else []
+        # سطر الفحص لمعرفة ما يعيده Supabase
+        st.write("🔍 فحص الاتصال بـ Supabase:", res)
+        sales_data = res.data if res and hasattr(res, 'data') else []
     except Exception as e:
+        st.error(f"خطأ في الاتصال: {e}")
         sales_data = []
     
-    # المعالجة الآمنة للقيم لضمان عدم حدوث خطأ إذا كانت الحقول فارغة
     total_sales = 0
     for item in sales_data:
         val = item.get('amount')
