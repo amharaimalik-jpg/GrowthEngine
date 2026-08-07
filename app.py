@@ -1,17 +1,19 @@
 import streamlit as st
 from supabase import create_client
 
-# 1. الاتصال بقاعدة البيانات
-supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+# تنظيف الروابط تلقائياً من أي مسافات مخفية لمنع خطأ الاتصال
+SUPABASE_URL = st.secrets["SUPABASE_URL"].strip()
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"].strip()
+
+# الاتصال بقاعدة البيانات
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def get_real_sales_data():
     try:
         response = supabase.table("sales").select("*").execute()
-        # عرض البيانات الخام على الشاشة لنراها بوضوح
-        st.write("البيانات المسترجعة من القاعدة:", response.data)
         return response.data
     except Exception as e:
-        st.error(f"حدث خطأ أثناء الاتصال: {e}")
+        st.error(f"خطأ في الاتصال: {e}")
         return []
 
 tab1, tab2, tab3 = st.tabs(["الرئيسية", "العملاء", "المالية"])
