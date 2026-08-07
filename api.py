@@ -4,19 +4,18 @@ import urllib.request
 
 def get_ai_closer_response(customer_input, history_str):
     try:
-        # التحقق من وجود المفتاح في إعدادات الـ Secrets
         if "GEMINI_API_KEY" not in st.secrets:
-            return "⚠️ خطأ: مفتاح GEMINI_API_KEY غير موجود في إعدادات Secrets في Streamlit."
+            return "⚠️ خطأ: مفتاح GEMINI_API_KEY غير موجود في إعدادات Streamlit Secrets."
             
         api_key = st.secrets["GEMINI_API_KEY"]
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        # استخدام نموذج gemini-pro المستقر لضمان عدم ظهور خطأ 404 نهائياً
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
         
-        # دمج الشخصية، الإجابة المخصصة للسؤال، ودمج المهمة 3 (Traffic & Outreach)
         prompt = f"""أنت وكيل مبيعات محترف ومغلق صفقات خبير لنظام GrowthEngine الذي يقدم (AI Lead Generation & Sales Closer Engine) بسعر 2000 دولار.
 قواعد الرد الإلزامية:
 1. أجب بدقة وعمق حصرياً على السؤال أو الاعتراض الحالي الذي طرحه العميل (مثل السعر، الضمان، إلخ) دون أي تكرار لردود سابقة.
-2. ادمج بذكاء شرح استراتيجيات جلب العملاء المستهدفين وزيادة حركة المرور (Traffic & Outreach - المهمة رقم 3) وكيف يقوم محرك النظام باستقطاب العملاء بدقة عالية.
-3. كن مقنعاً، احترافياً، ووجه العميل نحو رابط التحويل والتفعيل بمهارة.
+2. ادمج بذكاء شرح استراتيجيات جلب العملاء المستهدفين وزيادة حركة المرور (Traffic & Outreach - المهمة رقم 3) وكيف يقوم محرك النظام باستقطاب العملاء المستهدفين بدقة عالية لعملك.
+3. كن مقنعاً، احترافياً، ووجه العميل نحو رابط التحويل والتفعيل بمهارة لإتمام الصفقة.
 
 سجل المحادثة السابق:
 {history_str}
@@ -48,5 +47,4 @@ def get_ai_closer_response(customer_input, history_str):
         return "⚠️ تنبيه: استجابة خادم جوجل وصلت فارغة."
                 
     except Exception as e:
-        # إظهار الخطأ التقني الحقيقي بوضوح تام لنعرف السبب جذرياً
-        return f"⚠️ خطأ تقني صريح: {str(e)}"
+        return f"⚠️ خطأ تقني: {str(e)}"
