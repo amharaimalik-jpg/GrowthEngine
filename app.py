@@ -5,9 +5,9 @@ import stripe
 # إعداد الصفحة
 st.set_page_config(page_title="Growth Engine", page_icon="🚀", layout="wide")
 
-# التحقق من وجود الأسرار لمنع الانهيار
+# التحقق من الأسرار والاتصال
 if "SUPABASE_URL" not in st.secrets or "SUPABASE_KEY" not in st.secrets:
-    st.error("⚠️ يرجى التأكد من إدخال SUPABASE_URL و SUPABASE_KEY في إعدادات Secrets على المنصة.")
+    st.error("⚠️ يرجى التأكد من إدخال SUPABASE_URL و SUPABASE_KEY في إعدادات Secrets.")
     st.stop()
 
 url = st.secrets["SUPABASE_URL"].strip()
@@ -16,16 +16,15 @@ key = st.secrets["SUPABASE_KEY"].strip()
 if "STRIPE_API_KEY" in st.secrets:
     stripe.api_key = st.secrets["STRIPE_API_KEY"].strip()
 
-# إنشاء الاتصال بقاعدة البيانات
 try:
     supabase = create_client(url, key)
 except Exception as e:
-    st.error(f"خطأ في الاتصال بقاعدة البيانات: {e}")
+    st.error(f"خطأ في الاتصال: {e}")
     st.stop()
 
 st.title("🚀 نظام إدارة الأعمال والمدفوعات الشامل")
 
-# جلب البيانات من الجدول
+# جلب البيانات مباشرة بدون تخزين مؤقت لضمان التحديث الفوري
 try:
     res = supabase.table("sales").select("*").execute()
     sales_data = res.data if res else []
@@ -38,7 +37,16 @@ tab1, tab2, tab3 = st.tabs(["💳 اللوحة المالية والصفقات",
 with tab1:
     st.subheader("📊 لوحة الأرباح والمالية الحقيقية")
     
-    total_sales = sum(float(item.get('amount', 0)) for item in sales_data if item.get('amount'))
+    # حساب إجمالي الأرباح من عمود amount
+    total_sales = 0
+    for item in sales_data:
+        val = item.get('amount')
+        if val is not None:
+            try:
+                total_sales += float(val)
+            except:
+                pass
+                
     total_deals = len(sales_data)
 
     c1, c2, c3 = st.columns(3)
@@ -47,11 +55,11 @@ with tab1:
     c3.metric("سعر الخدمة القياسي", "$2,000.00 USD")
 
     st.write("---")
-    st.subheader("📁 جدول البيانات الحي المباشر")
+    st.subheader("📁 جدول البيانات الحي المباشر من Supabase")
     if sales_data:
         st.dataframe(sales_data, use_container_width=True)
     else:
-        st.info("قاعدة البيانات فارغة حالياً. أضف صفوفاً في جدول sales في Supabase لتظهر هنا.")
+        st.info("لا توجد بيانات ظاهرة في الجدول.")
 
 with tab2:
     st.subheader("👥 العملاء والصفقات")
@@ -62,9 +70,9 @@ with tab2:
             c_status = str(item.get('status', '')).lower()
             
             if c_status == 'paid':
-                st.success(f"✅ العميل: **{c_name}** | تمت الصفقة بنجاح بقيمة: ${c_amt:,.2f}")
+                st.success(f"✅ العميل: **{c_name}** | تمت الصفقة بنجاح بقيمة: ${float(c_amt):,.2f}")
             else:
-                st.warning(f"🔄 العميل: **{c_name}** | قيد التفاوض بقيمة: ${c_amt:,.2f}")
+                st.warning(f"🔄 العميل: **{c_name}** | قيد التفاوض بقيمة: ${float(c_amt):,.2f}")
     else:
         st.write("لا يوجد عملاء مسجلون حالياً.")
 
