@@ -3,31 +3,25 @@ from supabase import create_client
 import stripe
 import re
 
-# تنظيف الاتصال بقاعدة البيانات
 raw_url = str(st.secrets.get("SUPABASE_URL", ""))
 raw_key = str(st.secrets.get("SUPABASE_KEY", ""))
 url = re.sub(r'[\s"\'`]', '', raw_url)
 key = re.sub(r'[\s"\'`]', '', raw_key)
 
 supabase = create_client(url, key)
+stripe.api.key = st.secrets.get("STRIPE_API_KEY", "")
 
-# إعداد مفتاح Stripe من الـ Secrets
-stripe.api_key = st.secrets.get("STRIPE_API_KEY", "")
-
-# تصميم التبويبات الرئيسية للتطبيق
 tab1, tab2, tab3 = st.tabs(["الرئيسية", "العملاء", "المالية"])
 
 with tab1:
     st.subheader("🚀 لوحة التحكم الرئيسية")
     st.write("مرحباً بك في نظام إدارة الأعمال والمدفوعات الخاص بك.")
     
-    # قسم شراء خدمة أو منتج عبر Stripe
     st.markdown("### 💳 اطلب خدمتك الآن (الدفع الآمن عبر Stripe)")
-    service_price = 100.00  # سعر الخدمة بالدولار
+    service_price = 100.00
     
-    if st.button("ادفع الآن بقيمة $100 USD"):
+    if st.button("ادفع الآن بقيمة 100 USD"):
         try:
-            # إنشاء جلسة دفع عبر Stripe
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
@@ -36,7 +30,7 @@ with tab1:
                         'product_data': {
                             'name': 'خدمة استشارية / برمجية',
                         },
-                        'unit_amount': int(service_price * 100), # المبلغ بالـ Cents
+                        'unit_amount': int(service_price * 100),
                     },
                     'quantity': 1,
                 }],
@@ -44,7 +38,6 @@ with tab1:
                 success_url='https://streamlit.io?success=true',
                 cancel_url='https://streamlit.io?canceled=true',
             )
-            # إعادة توجيه المستخدم لصفحة الدفع الآمنة من Stripe
             st.markdown(f'<meta http-equiv="refresh" content="0;url={checkout_session.url}">', unsafe_allow_html=True)
             st.success("جاري تحويلك إلى صفحة الدفع الآمنة...")
         except Exception as e:
@@ -59,9 +52,11 @@ with tab3:
     sales_data = []
     try:
         res = supabase.table("sales").select("*").execute()
-        sales_data = res.data
+        sales_data = res.data if res else []
+        st.success("تم الاتصال وجلب البيانات بنجاح!")
     except Exception as e:
-        st.warning("جاري جلب البيانات المالية...")
+        st.error(f"خطأ قاعدة البيانات التفصيلي: {e}")
+        sales_data = []
     
     total_sales = sum(float(item.get('amount', 0)) for item in sales_data) if sales_data else 0
     total_deals = len(sales_data) if sales_data else 0
