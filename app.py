@@ -1,34 +1,24 @@
-# worker.py
-import time
+# app.py
+import streamlit as st
 from supabase import create_client
-import random
 
-# إعدادات الاتصال (ضع مفاتيحك هنا)
-SUPABASE_URL = "https://xydbsjifavzxwlmxpgpf.supabase.co"
-SUPABASE_KEY = "ضع_مفتاح_الـ_anon_هنا"
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+st.set_page_config(page_title="Growth Engine Dashboard", layout="wide")
 
-# قائمة بمصادر محتملة (هنا تربط لاحقاً بـ APIs حقيقية)
-def hunt_real_clients():
-    # هذا هو المكان الذي تربط فيه النظام بـ API لجلب شركات حقيقية
-    # حالياً يقوم بتوليد عملاء بناءً على نشاط حقيقي
-    industries = ["Tech Startup", "E-commerce Store", "Digital Agency"]
-    return {
-        "client_name": f"{random.choice(industries)} - {random.randint(1000, 9999)}",
-        "amount": 2000,
-        "status": "lead"
-    }
+# الاتصال
+supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
-print("🚀 المحرك الذكي يعمل الآن 24/7 في الشبكة...")
+st.title("💰 لوحة الأرباح والعملاء الحقيقيين")
 
-while True:
-    try:
-        # اقتناص العميل
-        client = hunt_real_clients()
-        supabase.table("sales").insert(client).execute()
-        print(f"🎯 تم اقتناص عميل جديد: {client['client_name']}")
-    except Exception as e:
-        print(f"خطأ في الاتصال بالشبكة: {e}")
-        
-    # وقت الانتظار بين كل عملية اقتناص (مثلاً كل 30 دقيقة)
-    time.sleep(1800)
+# جلب البيانات
+res = supabase.table("sales").select("*").execute()
+data = res.data
+
+# عرض الأرباح
+total_revenue = sum(float(i['amount']) for i in data if i['status'] == 'paid')
+total_leads = len(data)
+
+col1, col2 = st.columns(2)
+col1.metric("إجمالي العملاء المقتنصين", total_leads)
+col2.metric("الأرباح المحصلة ($)", total_revenue)
+
+st.dataframe(data)
