@@ -1,18 +1,20 @@
 import streamlit as st
 from supabase import create_client
+import re
 
-# قراءة القيم وعرضها للتأكد منها
-url = st.secrets.get("SUPABASE_URL", "غير موجود")
-key = st.secrets.get("SUPABASE_KEY", "غير موجود")
+# قراءة البيانات وتنظيفها تماماً من أي مسافات، علامات تنصيص، أو رموز مخفية
+raw_url = str(st.secrets.get("SUPABASE_URL", ""))
+raw_key = str(st.secrets.get("SUPABASE_KEY", ""))
 
-st.write(f"📍 الرابط المقروء حالياً: `{url}`")
-st.write(f"🔑 طول المفتاح المقروء: `{len(key)}` حرف")
+url = re.sub(r'[\s"\'`]', '', raw_url)
+key = re.sub(r'[\s"\'`]', '', raw_key)
+
+st.write(f"🔍 الرابط بعد التنظيف: `{url}`")
 
 try:
-    supabase = create_client(url.strip(), key.strip())
+    supabase = create_client(url, key)
     response = supabase.table("sales").select("*").execute()
-    st.success("تم الاتصال بنجاح!")
-    st.write(response.data)
+    st.success("تم الاتصال بقاعدة البيانات بنجاح!")
 except Exception as e:
     st.error(f"خطأ الاتصال التفصيلي: {e}")
 
