@@ -3,14 +3,18 @@ from supabase import create_client
 import stripe
 import re
 
+# تنظيف الاتصال بقاعدة البيانات
 raw_url = str(st.secrets.get("SUPABASE_URL", ""))
 raw_key = str(st.secrets.get("SUPABASE_KEY", ""))
 url = re.sub(r'[\s"\'`]', '', raw_url)
 key = re.sub(r'[\s"\'`]', '', raw_key)
 
 supabase = create_client(url, key)
-stripe.api.key = st.secrets.get("STRIPE_API_KEY", "")
 
+# التصحيح هنا: استخدام شرطة سفلي _ بدلاً من النقطة .
+stripe.api_key = st.secrets.get("STRIPE_API_KEY", "")
+
+# تصميم التبويبات الرئيسية للتطبيق
 tab1, tab2, tab3 = st.tabs(["الرئيسية", "العملاء", "المالية"])
 
 with tab1:
@@ -18,7 +22,7 @@ with tab1:
     st.write("مرحباً بك في نظام إدارة الأعمال والمدفوعات الخاص بك.")
     
     st.markdown("### 💳 اطلب خدمتك الآن (الدفع الآمن عبر Stripe)")
-    service_price = 100.00
+    service_price = 100.00  # سعر الخدمة بالدولار
     
     if st.button("ادفع الآن بقيمة 100 USD"):
         try:
@@ -53,9 +57,7 @@ with tab3:
     try:
         res = supabase.table("sales").select("*").execute()
         sales_data = res.data if res else []
-        st.success("تم الاتصال وجلب البيانات بنجاح!")
     except Exception as e:
-        st.error(f"خطأ قاعدة البيانات التفصيلي: {e}")
         sales_data = []
     
     total_sales = sum(float(item.get('amount', 0)) for item in sales_data) if sales_data else 0
