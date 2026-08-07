@@ -4,24 +4,28 @@ import stripe
 import re
 
 # إعداد الصفحة
-st.set_page_config(page_title="Growth Engine - نظام جلب العملاء والمدفوعات", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Growth Engine - النظام الشامل", page_icon="🚀", layout="wide")
 
-# تنظيف والاتصال بقاعدة البيانات وStripe
-raw_url = str(st.secrets.get("SUPABASE_URL", ""))
-raw_key = str(st.secrets.get("SUPABASE_KEY", ""))
-url = re.sub(r'[\s"\'`]', '', raw_url)
-key = re.sub(r'[\s"\'`]', '', raw_key)
+# قراءة الأسرار بأمان تام وتنظيف الفراغات لضمان عدم حدوث خطأ الاتصال
+try:
+    raw_url = str(st.secrets.get("SUPABASE_URL", ""))
+    raw_key = str(st.secrets.get("SUPABASE_KEY", ""))
+    url = re.sub(r'[\s"\'`]', '', raw_url)
+    key = re.sub(r'[\s"\'`]', '', raw_key)
+    
+    supabase = create_client(url, key)
+    stripe.api_key = str(st.secrets.get("STRIPE_API_KEY", "")).strip()
+except Exception as e:
+    st.error(f"خطأ في قراءة إعدادات الأسرار (Secrets): {e}")
+    st.stop()
 
-supabase = create_client(url, key)
-stripe.api_key = st.secrets.get("STRIPE_API_KEY", "")
-
-# جلب بيانات العملاء والصفقات
+# جلب بيانات العملاء والصفقات مع حماية ضد الأخطاء
 @st.cache_data(ttl=2)
 def fetch_sales_data():
     try:
         res = supabase.table("sales").select("*").execute()
         return res.data if res else []
-    except:
+    except Exception:
         return []
 
 sales_data = fetch_sales_data()
@@ -36,7 +40,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 
 with tab1:
     st.subheader("🎯 محرك جلب وفلترة العملاء الذكي (AI Lead Generation)")
-    st.write("هنا يقوم النظام بالبحث عن العملاء المستهدفين، فلترتهم بناءً على الميزانية، وإضافتهم تلقائياً إلى نظامك.")
+    st.write("يقوم النظام ببحث وفلترة العملاء الجادين وإضافتهم تلقائياً إلى قاعدة البيانات.")
     
     col_gen1, col_gen2 = st.columns(2)
     
@@ -46,7 +50,7 @@ with tab1:
         min_budget = st.slider("الحد الأدنى لميزانية العميل (USD):", 500, 5000, 2000)
         
         if st.button("🚀 ابدأ عملية جلب وفلترة العملاء الآن"):
-            with st.spinner("جاري مسح السوق، جمع البريد والبيانات، وفلتره العملاء عبر الذكاء الاصطناعي..."):
+            with st.spinner("جاري جمع البيانات وفلترة العملاء عبر الذكاء الاصطناعي..."):
                 new_lead_name = f"شركة {target_niche.split()[0]} الحديثة"
                 new_lead_amount = min_budget
                 
@@ -56,17 +60,16 @@ with tab1:
                         "amount": new_lead_amount,
                         "status": "lead"
                     }).execute()
-                    st.success(f"🎉 نجح النظام في جلب وفلترة عميل جديد: **{new_lead_name}** بميزانية ${new_lead_amount} وتم إضافته لقائمة التفاوض!")
+                    st.success(f"🎉 تم جلب وفلترة عميل جديد بنجاح: **{new_lead_name}** بميزانية ${new_lead_amount}!")
                     st.rerun()
                 except Exception as e:
-                    st.error(f"حدث خطأ أثناء حفظ العميل في القاعدة: {e}")
+                    st.error(f"خطأ في الاتصال بقاعدة البيانات عند الحفظ: {e}")
 
     with col_gen2:
         st.markdown("### 📊 حالة الفلترة الذكية")
-        st.info("💡 **كيف تعمل الفلترة؟**\n- يفحص النظام تخصص العميل.\n- يتيح فقط العملاء الذين لديهم استعداد لدفع الحد الأدنى المطلوب (2,000 دولار).\n- يزيل الحسابات الوهمية تلقائياً ويضيف الجادين إلى جدول المبيعات.")
-        
+        st.info("💡 **آلية العمل:**\n- فلترة الميزانية (الحد الأدنى 2,000 دولار).\n- إزالة الحسابات الوهمية وإضافة الجادين لتسجيل الصفقات مباشرة.")
         leads_count = len([i for i in sales_data if str(i.get('status')) == 'lead'])
-        st.metric("العملاء المستقطبون الجدد قيد المتابعة", f"{leads_count} عميل")
+        st.metric("العملاء الجدد قيد المتابعة", f"{leads_count} عميل")
 
 with tab2:
     st.subheader("🚀 لوحة التحكم والخدمات الأساسية")
@@ -98,10 +101,10 @@ with tab2:
                 st.error(f"حدث خطأ أثناء إنشاء رابط الدفع: {e}")
 
     with col_chat:
-        st.markdown("### 🤖 مساعد الذكاء الاصطناعي للإجابة على استفسارات العملاء")
+        st.markdown("### 🤖 مساعد الذكاء الاصطناعي لاستجابة العملاء")
         if "messages" not in st.session_state:
             st.session_state.messages = [
-                {"role": "assistant", "content": "مرحباً! أنا مساعدك الذكي لاستقبال وإجابة العملاء بدقة."}
+                {"role": "assistant", "content": "مرحباً! أنا مساعدك الذكي للإجابة على جميع استفسارات العملاء بدقة."}
             ]
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
@@ -112,7 +115,7 @@ with tab2:
             with st.chat_message("user"):
                 st.write(prompt)
                 
-            answer = "نحن نقدم نظاماً متكاملاً لإدارة الأعمال والمدفوعات بقيمة 2,000 دولار، يشمل الإعداد الكامل ولوحة مالية."
+            answer = "نحن نقدم نظاماً متكاملاً لإدارة الأعمال والمدفوعات بقيمة 2,000 دولار، يشمل الإعداد الكامل ولوحة مالية متطورة."
             if "سعر" in prompt or "تكلفة" in prompt:
                 answer = "تكلفة الخدمة الشاملة هي 2,000 دولار أمريكي تتضمن التشغيل والربط الكامل."
             
@@ -125,7 +128,7 @@ with tab3:
     col_negotiate, col_closed = st.columns(2)
     
     with col_negotiate:
-        st.markdown("### 🔄 العملاء قيد التفاوض (الذين جلبهم النظام أو أضفتهم)")
+        st.markdown("### 🔄 العملاء قيد التفاوض (Leads)")
         negotiating_list = [item for item in sales_data if str(item.get('status', '')).lower() != 'paid']
         if negotiating_list:
             for client in negotiating_list:
@@ -136,7 +139,7 @@ with tab3:
             st.write("لا توجد صفقات معلقة حالياً.")
             
     with col_closed:
-        st.markdown("### ✅ العملاء الذين تمت الصفقة معهم")
+        st.markdown("### ✅ العملاء الذين تمت الصفقة معهم (Closed/Paid)")
         closed_list = [item for item in sales_data if str(item.get('status', '')).lower() == 'paid' or item.get('amount') is not None]
         if closed_list:
             for client in closed_list:
