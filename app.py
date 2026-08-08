@@ -1,11 +1,11 @@
 import sqlite3
-import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import google.generativeai as genai
 
 st.set_page_config(
     page_title="Growth Engine - Ultra Autonomous System",
@@ -13,8 +13,11 @@ st.set_page_config(
     layout="wide",
 )
 
+# قراءة مفتاح API وإعداده بمكتبة جوجل الرسمية
 try:
     gemini_key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
+    if gemini_key:
+        genai.configure(api_key=gemini_key)
 except Exception:
     gemini_key = ""
 
@@ -52,38 +55,31 @@ def init_db():
 
 init_db()
 
-# --- الاتصال المباشر المحدث بنسخة v1 القياسية ---
-def call_gemini_direct(prompt_text):
+# --- الاتصال الآمن والمضمون باستخدام مكتبة جوجل الرسمية ---
+def call_gemini_official(prompt_text):
     if not gemini_key:
         return "⚠️ خطأ: لم يتم العثور على مفتاح GEMINI_API_KEY في الأسرار."
     
-    # استخدام المسار الرسمي الثابت v1 مع نموذج flash
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={gemini_key}"
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "contents": [{
-            "parts": [{"text": prompt_text}]
-        }]
-    }
+    # قائمة النماذج الأكثر مرونة ودعماً للمفاتيح المجانية
+    models_to_test = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
     
-    try:
-        response = requests.post(url, headers=headers, json=payload, timeout=20)
-        res_json = response.json()
-        if "candidates" in res_json and len(res_json["candidates"]) > 0:
-            return res_json["candidates"][0]["content"]["parts"][0]["text"]
-        elif "error" in res_json:
-            return f"❌ خطأ من جوجل: {res_json['error'].get('message', 'خطأ غير معروف')}"
-        else:
-            return f"⚠️ استجابة غير متوقعة: {res_json}"
-    except Exception as e:
-        return f"❌ خطأ في الاتصال: {e}"
+    for m_name in models_to_test:
+        try:
+            model = genai.GenerativeModel(m_name)
+            response = model.generate_content(prompt_text)
+            if response and response.text:
+                return response.text
+        except Exception:
+            continue
+            
+    return "❌ عذراً، لم نتمكن من الاتصال بالنموذج. تأكد من صحة المفتاح في إعدادات Streamlit Secrets."
 
 def send_autonomous_email(target_email, subject, ai_message):
     sender_email = str(st.secrets.get("MY_EMAIL", "")).strip()
     sender_password = str(st.secrets.get("MY_EMAIL_PASSWORD", "")).strip()
     
     if not sender_email or not sender_password:
-        return "⚠️ خطأ: لم يتم إعداد إيميلك أو كلمة مرور التطبيقات."
+        return "⚠️ خطأ: لم يتم إعداد البريد أو كلمة المرور في الأسرار."
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -102,7 +98,7 @@ def send_autonomous_email(target_email, subject, ai_message):
         return f"❌ فشل الإرسال: {e}"
 
 st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
-st.success("🟢 النظام يعمل مجاناً 100% بكفاءة عالية!")
+st.success("🟢 النظام يعمل مجاناً 100% بكفاءة عالية وبالمكتبة الرسمية لجوجل!")
 
 def get_data():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
@@ -179,7 +175,7 @@ with tab2:
                 اكتب نص الإيميل التسويقي فقط دون شروحات جانبية."""
                 
                 with st.spinner("جاري صياغة الرد الذكي..."):
-                    ai_response = call_gemini_direct(full_query)
+                    ai_response = call_gemini_official(full_query)
             else:
                 ai_response = "يرجى إضافة مفتاح GEMINI_API_KEY في الأسرار."
 
