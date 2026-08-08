@@ -7,14 +7,12 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# 1. إعدادات الصفحة
 st.set_page_config(
     page_title="Growth Engine - Ultra Autonomous System",
     page_icon="⚡",
     layout="wide",
 )
 
-# 2. قراءة الأسرار بأمان
 try:
     gemini_key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
 except Exception:
@@ -22,7 +20,6 @@ except Exception:
 
 DB_NAME = "autonomous_bot_pro.db"
 
-# 3. إعداد قاعدة البيانات
 def init_db():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     cursor = conn.cursor()
@@ -55,39 +52,39 @@ def init_db():
 
 init_db()
 
-# --- محرك الاتصال المباشر والمضمون بـ Gemini API ---
+# --- محرك الاتصال المباشر والمحدث بنماذج Gemini المتاحة ---
 def call_gemini_direct(prompt_text):
     if not gemini_key:
         return "⚠️ خطأ: لم يتم العثور على مفتاح GEMINI_API_KEY في الأسرار."
     
-    # استخدام الاتصال المباشر بـ REST API لتفادي أي أخطاء في المكتبات
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "contents": [{
-            "parts": [{"text": prompt_text}]
-        }]
-    }
+    # تجربة النموذجين الأكثر ضماناً لتوافق مفاتيح AI Studio المجانية
+    models_to_try = ["gemini-1.5-flash-latest", "gemini-pro"]
     
-    try:
-        response = requests.post(url, headers=headers, json=payload, timeout=20)
-        res_json = response.json()
-        if "candidates" in res_json and len(res_json["candidates"]) > 0:
-            return res_json["candidates"][0]["content"]["parts"][0]["text"]
-        elif "error" in res_json:
-            return f"❌ خطأ من جافاسكريبت/جوجل API: {res_json['error'].get('message', 'خطأ غير معروف')}"
-        else:
-            return f"⚠️ استجابة غير متوقعة من الخادم: {res_json}"
-    except Exception as e:
-        return f"❌ خطأ في الاتصال: {e}"
+    for model_name in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "contents": [{
+                "parts": [{"text": prompt_text}]
+            }]
+        }
+        
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=15)
+            res_json = response.json()
+            if "candidates" in res_json and len(res_json["candidates"]) > 0:
+                return res_json["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception:
+            continue
+            
+    return "❌ تعذر الاتصال بنماذج Gemini، يرجى التأكد من صلاحية المفتاح في Google AI Studio."
 
-# --- محرك الإرسال الآلي للإيميلات ---
 def send_autonomous_email(target_email, subject, ai_message):
     sender_email = str(st.secrets.get("MY_EMAIL", "")).strip()
     sender_password = str(st.secrets.get("MY_EMAIL_PASSWORD", "")).strip()
     
     if not sender_email or not sender_password:
-        return "⚠️ خطأ: لم يتم إعداد إيميلك أو كلمة مرور التطبيقات في الأسرار (Secrets)."
+        return "⚠️ خطأ: لم يتم إعداد إيميلك أو كلمة مرور التطبيقات في الأسرار."
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -105,9 +102,8 @@ def send_autonomous_email(target_email, subject, ai_message):
     except Exception as e:
         return f"❌ فشل الإرسال: {e}"
 
-# 4. واجهة المستخدم الذكية
 st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
-st.success("🟢 النظام يعمل مجاناً 100% وبكفاءة عالية عبر اتصال مباشر مع Gemini!")
+st.success("🟢 النظام يعمل مجاناً 100% بكفاءة عالية!")
 
 def get_data():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
@@ -178,12 +174,12 @@ with tab2:
 
         with st.chat_message("assistant"):
             if gemini_key:
-                full_query = f"""أنت مدير مبيعات خبير وعالمي. العميل المستهدف: {selected_company}.
+                full_query = f"""أنت مدير مبيعات خبير. العميل المستهدف: {selected_company}.
                 خدمتنا هي 'Autonomous Growth System' بقيمة 2000 دولار.
-                صيغ رسالة بريد إلكتروني احترافية جداً مستخدماً استراتيجية (AIDA: Attention, Interest, Desire, Action) بناءً على طلب المستخدم التالي: {full_user_prompt}
+                صيغ رسالة بريد إلكتروني احترافية مستخدماً استراتيجية (AIDA) بناءً على طلب المستخدم التالي: {full_user_prompt}
                 اكتب نص الإيميل التسويقي فقط دون شروحات جانبية."""
                 
-                with st.spinner("جاري توليد الرد من خوادم Gemini الذكية..."):
+                with st.spinner("جاري صياغة الرد الذكي..."):
                     ai_response = call_gemini_direct(full_query)
             else:
                 ai_response = "يرجى إضافة مفتاح GEMINI_API_KEY في الأسرار."
@@ -198,11 +194,11 @@ with tab2:
     if st.button("🚀 تفويض الوكيل بإرسال الإيميل وتسجيل المتابعة"):
         assistant_messages = [m["content"] for m in st.session_state.messages if m["role"] == "assistant"]
         if not assistant_messages:
-            st.warning("⚠️ لا توجد رسالة مُصاغة! اطلب من الوكيل كتابة العرض أولاً.")
+            st.warning("⚠️ لا توجد رسالة مُصاغة!")
         elif not target_client_email:
             st.warning("⚠️ الرجاء إدخال إيميل العميل.")
         else:
-            with st.spinner("الوكيل يقوم بإرسال الإيميل وتسجيل تاريخ المتابعة..."):
+            with st.spinner("الوكيل يقوم بالإرسال..."):
                 last_ai_message = assistant_messages[-1]
                 result = send_autonomous_email(
                     target_email=target_client_email,
@@ -216,7 +212,7 @@ with tab2:
                                    ("تم الإرسال وبانتظار المتابعة", str(datetime.now().date()), selected_company))
                     conn.commit()
                     conn.close()
-                    st.success(result + " وتم تسجيل تاريخ المتابعة في النظام بنجاح!")
+                    st.success(result)
                 else:
                     st.error(result)
 
