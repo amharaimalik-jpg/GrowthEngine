@@ -1,38 +1,28 @@
-import time
 import sqlite3
-import threading
 import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import streamlit as st
-import stripe
-import google.generativeai as genai
 import pandas as pd
 from datetime import datetime
 
+# 1. إعدادات الصفحة
 st.set_page_config(
     page_title="Growth Engine - Ultra Autonomous System",
     page_icon="⚡",
     layout="wide",
 )
 
+# 2. قراءة الأسرار بأمان
 try:
-    stripe.api_key = str(st.secrets.get("STRIPE_LIVE_KEY", "")).strip()
-    raw_google_keys = str(st.secrets.get("GOOGLE_API_KEY", "")).strip()
-    GOOGLE_API_KEYS = [k.strip() for k in raw_google_keys.split(",") if k.strip()]
-    SEARCH_ENGINE_ID = str(st.secrets.get("SEARCH_ENGINE_ID", "")).strip()
+    gemini_key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
 except Exception:
-    stripe.api_key = ""
-    GOOGLE_API_KEYS = []
-    SEARCH_ENGINE_ID = ""
-
-gemini_key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
-if gemini_key:
-    genai.configure(api_key=gemini_key)
+    gemini_key = ""
 
 DB_NAME = "autonomous_bot_pro.db"
 
+# 3. إعداد قاعدة البيانات
 def init_db():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     cursor = conn.cursor()
@@ -65,6 +55,33 @@ def init_db():
 
 init_db()
 
+# --- محرك الاتصال المباشر والمضمون بـ Gemini API ---
+def call_gemini_direct(prompt_text):
+    if not gemini_key:
+        return "⚠️ خطأ: لم يتم العثور على مفتاح GEMINI_API_KEY في الأسرار."
+    
+    # استخدام الاتصال المباشر بـ REST API لتفادي أي أخطاء في المكتبات
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+    headers = {"Content-Type": "application/json"}
+    payload = {
+        "contents": [{
+            "parts": [{"text": prompt_text}]
+        }]
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=20)
+        res_json = response.json()
+        if "candidates" in res_json and len(res_json["candidates"]) > 0:
+            return res_json["candidates"][0]["content"]["parts"][0]["text"]
+        elif "error" in res_json:
+            return f"❌ خطأ من جافاسكريبت/جوجل API: {res_json['error'].get('message', 'خطأ غير معروف')}"
+        else:
+            return f"⚠️ استجابة غير متوقعة من الخادم: {res_json}"
+    except Exception as e:
+        return f"❌ خطأ في الاتصال: {e}"
+
+# --- محرك الإرسال الآلي للإيميلات ---
 def send_autonomous_email(target_email, subject, ai_message):
     sender_email = str(st.secrets.get("MY_EMAIL", "")).strip()
     sender_password = str(st.secrets.get("MY_EMAIL_PASSWORD", "")).strip()
@@ -88,8 +105,9 @@ def send_autonomous_email(target_email, subject, ai_message):
     except Exception as e:
         return f"❌ فشل الإرسال: {e}"
 
+# 4. واجهة المستخدم الذكية
 st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
-st.success("🟢 النظام يعمل مجاناً بكامل طاقته عبر ذكاء Gemini الاصطناعي!")
+st.success("🟢 النظام يعمل مجاناً 100% وبكفاءة عالية عبر اتصال مباشر مع Gemini!")
 
 def get_data():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
@@ -164,12 +182,9 @@ with tab2:
                 خدمتنا هي 'Autonomous Growth System' بقيمة 2000 دولار.
                 صيغ رسالة بريد إلكتروني احترافية جداً مستخدماً استراتيجية (AIDA: Attention, Interest, Desire, Action) بناءً على طلب المستخدم التالي: {full_user_prompt}
                 اكتب نص الإيميل التسويقي فقط دون شروحات جانبية."""
-                try:
-                    model = genai.GenerativeModel("gemini-1.5-flash")
-                    response = model.generate_content(full_query)
-                    ai_response = response.text
-                except Exception as e:
-                    ai_response = f"خطأ في الاتصال بـ Gemini: {e}"
+                
+                with st.spinner("جاري توليد الرد من خوادم Gemini الذكية..."):
+                    ai_response = call_gemini_direct(full_query)
             else:
                 ai_response = "يرجى إضافة مفتاح GEMINI_API_KEY في الأسرار."
 
@@ -207,8 +222,8 @@ with tab2:
 
 with tab3:
     st.subheader("💳 بوابة تحصيل الأرباح")
-    st.info("💡 بما أنك لا تمتلك حساباً بنكياً حالياً، يمكنك ترك بوابة Stripe معطلة.")
+    st.info("💡 النظام يعمل بصورة كاملة ومجانية.")
 
 st.write("---")
 if st.button("🔄 تحديث الشاشة يدويّاً"):
-    st.rerun() 
+    st.rerun()
