@@ -8,15 +8,17 @@ from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import stripe
 from openai import OpenAI
+import pandas as pd
+from datetime import datetime
 
 # 1. إعدادات الصفحة
 st.set_page_config(
-    page_title="Growth Engine - Autonomous Search & Outreach Bot",
+    page_title="Growth Engine - Ultra Autonomous System",
     page_icon="⚡",
     layout="wide",
 )
 
-# 2. إعداد المفاتيح والأسرار
+# 2. إعداد المفاتيح والأسرار بأمان
 try:
     stripe.api_key = str(st.secrets.get("STRIPE_LIVE_KEY", "")).strip()
     raw_google_keys = str(st.secrets.get("GOOGLE_API_KEY", "")).strip()
@@ -27,14 +29,13 @@ except Exception:
     GOOGLE_API_KEYS = []
     SEARCH_ENGINE_ID = ""
 
-# تهيئة عميل OpenAI بأمان
 openai_key = str(st.secrets.get("OPENAI_API_KEY", "")).strip()
 client = OpenAI(api_key=openai_key) if openai_key else None
 
-DB_NAME = "autonomous_bot.db"
+DB_NAME = "autonomous_bot_pro.db"
 
 
-# 3. إعداد قاعدة البيانات المحلية
+# 3. إعداد قاعدة البيانات المحدثة (تدعم تتبع المتابعة والتاريخ)
 def init_db():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     cursor = conn.cursor()
@@ -43,9 +44,11 @@ def init_db():
         CREATE TABLE IF NOT EXISTS sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             client_name TEXT,
+            client_email TEXT,
             amount REAL,
             status TEXT,
-            outreach_status TEXT
+            outreach_status TEXT,
+            last_contact_date TEXT
         )
     """
     )
@@ -56,7 +59,7 @@ def init_db():
 init_db()
 
 
-# --- دالة الإرسال الآلي للإيميلات (المحرك الجديد) ---
+# --- محرك الإرسال الآلي للإيميلات ---
 def send_autonomous_email(target_email, subject, ai_message):
     sender_email = st.secrets.get("MY_EMAIL", "").strip()
     sender_password = st.secrets.get("MY_EMAIL_PASSWORD", "").strip()
@@ -123,7 +126,7 @@ class RobustGoogleSearch:
         return []
 
 
-# 5. روبوت البحث في الخلفية
+# 5. روبوت البحث في الخلفية (يعمل 24/7)
 def autonomous_search_bot():
     queries = [
         "digital marketing agency startup",
@@ -141,12 +144,12 @@ def autonomous_search_bot():
                         conn = sqlite3.connect(DB_NAME, check_same_thread=False)
                         cursor = conn.cursor()
                         for item in items:
-                            company_name = item.get("title", "شركة رقمية مستهدفة")
+                            company_name = item.get("title", "شركة مستهدفة")
                             cursor.execute("SELECT id FROM sales WHERE client_name = ?", (company_name,))
                             if not cursor.fetchone():
                                 cursor.execute(
-                                    "INSERT INTO sales (client_name, amount, status, outreach_status) VALUES (?, ?, ?, ?)",
-                                    (company_name, 2000.0, "lead", "تم الرصد.. بانتظار التفاوض"),
+                                    "INSERT INTO sales (client_name, client_email, amount, status, outreach_status, last_contact_date) VALUES (?, ?, ?, ?, ?, ?)",
+                                    (company_name, "info@" + company_name.lower().replace(" ", "") + ".com", 2000.0, "lead", "تم الرصد.. بانتظار التفاوض", str(datetime.now().date())),
                                 )
                                 conn.commit()
                                 break
@@ -168,18 +171,25 @@ def start_bot_worker():
 start_bot_worker()
 
 
-# 6. واجهة المستخدم الذكية (Streamlit UI)
-st.title("⚡ ريبوت Growth Engine للبحث والتواصل الآلي (24/7)")
-st.success("🟢 الروبوت يعمل الآن في الخلفية: يمسح الإنترنت، يلتقط الشركات الحقيقية، وينتظر أوامرك للإرسال!")
+# 6. واجهة المستخدم الذكية (Dashboard & Management)
+st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
+st.success("🟢 النظام يعمل بكامل طاقته في الخلفية: يمسح الويب، يصيغ العروض بنظام AIDA، ويدير المتابعة الآلية!")
 
 def get_data():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     cursor = conn.cursor()
-    cursor.execute("SELECT client_name, amount, status, outreach_status FROM sales")
+    cursor.execute("SELECT client_name, client_email, amount, status, outreach_status, last_contact_date FROM sales")
     rows = cursor.fetchall()
     conn.close()
     return [
-        {"client_name": r[0], "amount": r[1], "status": r[2], "outreach_status": r[3]}
+        {
+            "client_name": r[0],
+            "client_email": r[1],
+            "amount": r[2],
+            "status": r[3],
+            "outreach_status": r[4],
+            "last_contact_date": r[5]
+        }
         for r in rows
     ]
 
@@ -189,50 +199,58 @@ total_earnings = sum(float(i.get("amount", 0)) for i in closed_deals)
 
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("الشركات المكتشفة", f"{len(data)} شركة")
-c2.metric("حالة النظام", "نشط ومصلّي")
-c3.metric("الصفقات المدفوعة", f"{len(closed_deals)} صفقة")
+c2.metric("حالة الروبوت", "يعمل 24/7 🚀")
+c3.metric("الصفقات المغلقة", f"{len(closed_deals)} صفقة")
 c4.metric("إجمالي الأرباح", f"${total_earnings:,.2f} USD")
 
 st.write("---")
 
-tab1, tab2, tab3 = st.tabs(["🌐 رادار الشركات", "💬 وكيل المبيعات الذكي (AI & Email)", "💳 بوابة الدفع"])
+tab1, tab2, tab3 = st.tabs(["🌐 رادار الشركات والتحليلات", "🤖 وكيل المبيعات الذكي (AIDA & Auto-Email)", "💳 بوابة تحصيل الأرباح"])
 
 with tab1:
-    st.subheader("🌐 جدول العمليات المباشر (مستخرج من شبكة الويب)")
+    st.subheader("🌐 جدول العمليات الحية وقاعدة بيانات الصفقات")
     if data:
-        st.dataframe(data, use_container_width=True)
+        st.dataframe(pd.DataFrame(data), use_container_width=True)
     else:
-        st.info("⏳ الروبوت يقوم الآن بعملية المسح الأولية عبر الإنترنت.. انتظر لحظات.")
+        st.info("⏳ جاري جلب الشركات الأولى من الإنترنت.. انتظر لحظات.")
 
 with tab2:
-    st.subheader("💬 وكيل المبيعات الذكي ومحرك الإرسال")
+    st.subheader("💬 وكيل المبيعات الذكي (تقنية AIDA المتقدمة)")
     
     if data:
         company_options = [row["client_name"] for row in data]
-        selected_company = st.selectbox("اختر شركة للتفاوض معها:", company_options)
+        selected_company = st.selectbox("اختر الشركة المستهدفة للتفاوض:", company_options)
+        
+        # استخراج إيميل الشركة المختارة تلقائياً لتسهيل المهمة
+        selected_row = next((r for r in data if r["client_name"] == selected_company), None)
+        default_email = selected_row["client_email"] if selected_row else ""
     else:
         selected_company = "شركة افتراضية"
-        st.info("لا توجد شركات في الرادار بعد، يمكنك البدء بالتجربة.")
+        default_email = ""
+        st.info("لا توجد شركات مرصودة حالياً.")
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # عرض الرسائل
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # محادثة الذكاء الاصطناعي
-    if prompt := st.chat_input("اطلب من الوكيل صياغة عرض أو رد للعميل..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    # صندوق الأوامر والنقاط الذكية
+    pain_point = st.text_input("💡 (نصيحة 1) حدد نقطة ألم العميل أو أمر خاص للوكيل (مثال: ركز على بطء موقعهم):", "ركز على مضاعفة المبيعات وتوفير الوقت")
+
+    if prompt := st.chat_input("اطلب من الوكيل صياغة الرد أو العرض..."):
+        full_user_prompt = f"الهدف: {prompt} | نقطة الألم المستهدفة: {pain_point}"
+        st.session_state.messages.append({"role": "user", "content": full_user_prompt})
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.markdown(full_user_prompt)
 
         with st.chat_message("assistant"):
             if client:
-                system_prompt = f"""أنت وكيل مبيعات محترف. العميل المستهدف هو: {selected_company}.
+                system_prompt = f"""أنت مدير مبيعات خبير وعالمي. العميل المستهدف: {selected_company}.
                 خدمتنا هي 'Autonomous Growth System' بقيمة 2000 دولار.
-                مهمتك: صياغة رسالة بريد إلكتروني مقنعة واحترافية للعميل. لا تضع أي شروحات، فقط اكتب نص الإيميل ليكون جاهزاً للإرسال."""
+                مهمتك: صياغة رسالة بريد إلكتروني احترافية جداً مستخدماً استراتيجية (AIDA: Attention, Interest, Desire, Action). 
+                اجعل النص مقنعاً، مباشراً، ويخاطب نقطة الألم المذكورة. لا تضع شروحات جانبية، اكتب نص الإيميل فقط."""
                 try:
                     response = client.chat.completions.create(
                         model="gpt-4o",
@@ -243,37 +261,46 @@ with tab2:
                 except Exception as e:
                     ai_response = f"خطأ في الاتصال بـ OpenAI: {e}"
             else:
-                ai_response = "يرجى إضافة مفتاح OPENAI_API_KEY في الأسرار (Secrets)."
+                ai_response = "يرجى إضافة مفتاح OPENAI_API_KEY في الأسرار."
 
             st.markdown(ai_response)
             st.session_state.messages.append({"role": "assistant", "content": ai_response})
 
     st.write("---")
-    st.markdown("### 🚀 الإرسال الآلي للعميل")
-    target_client_email = st.text_input("أدخل إيميل الشركة المستهدفة لإرسال آخر عرض صاغه الوكيل:")
+    st.markdown("### 🚀 الإرسال الآلي والتعديل البشري الذكي")
+    st.info("✍️ (نصيحة 2) يمكنك مراجعة النص أعلاه وتعديل الاسم أو إضافة لمسة بشرية قبل التفويض بالإرسال.")
     
-    if st.button("🚀 تفويض الوكيل بإرسال الإيميل الآن"):
+    target_client_email = st.text_input("إيميل العميل المستهدف للإرسال:", value=default_email)
+    
+    if st.button("🚀 تفويض الوكيل بإرسال الإيميل وتسجيل المتابعة"):
         assistant_messages = [m["content"] for m in st.session_state.messages if m["role"] == "assistant"]
         if not assistant_messages:
-            st.warning("⚠️ لا توجد رسالة مُصاغة! اطلب من الوكيل كتابة العرض أولاً في صندوق الدردشة أعلاه.")
+            st.warning("⚠️ لا توجد رسالة مُصاغة! اطلب من الوكيل كتابة العرض أولاً.")
         elif not target_client_email:
-            st.warning("⚠️ الرجاء إدخال إيميل العميل أولاً.")
+            st.warning("⚠️ الرجاء إدخال إيميل العميل.")
         else:
-            with st.spinner("الوكيل يقوم بإرسال الإيميل الآن..."):
+            with st.spinner("الوكيل يقوم بإرسال الإيميل وتسجيل تاريخ المتابعة..."):
                 last_ai_message = assistant_messages[-1]
                 result = send_autonomous_email(
                     target_email=target_client_email,
-                    subject=f"دعوة للتعاون من Growth Engine لشركة {selected_company}",
+                    subject=f"فرصة نمو استراتيجية لشركة {selected_company}",
                     ai_message=last_ai_message
                 )
                 if "✅" in result:
-                    st.success(result)
+                    # تحديث تاريخ آخر اتصال وتاريخ المتابعة في القاعدة (نصيحة 3)
+                    conn = sqlite3.connect(DB_NAME, check_same_thread=False)
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE sales SET outreach_status = ?, last_contact_date = ? WHERE client_name = ?", 
+                                   ("تم الإرسال وبانتظار المتابعة", str(datetime.now().date()), selected_company))
+                    conn.commit()
+                    conn.close()
+                    st.success(result + " وتم تسجيل تاريخ المتابعة في النظام بنجاح!")
                 else:
                     st.error(result)
 
 with tab3:
-    st.subheader("💳 بوابة تحصيل الأرباح الحقيقية")
-    if st.button("💳 توليد رابط دفع Stripe (2,000$) حقيقي"):
+    st.subheader("💳 بوابة تحصيل الأرباح الآمنة")
+    if st.button("💳 توليد رابط دفع Stripe بقيمة $2,000"):
         if stripe.api_key:
             try:
                 checkout_session = stripe.checkout.Session.create(
@@ -293,12 +320,12 @@ with tab3:
                     cancel_url="https://streamlit.io?canceled=true",
                 )
                 st.markdown(f'<meta http-equiv="refresh" content="0;url={checkout_session.url}">', unsafe_allow_html=True)
-                st.success("🔄 جاري تحويلك لبوابة الدفع...")
+                st.success("🔄 جاري تحويلك لبوابة الدفع الحية...")
             except Exception as e:
                 st.error(f"خطأ في بوابة الدفع: {e}")
         else:
-            st.warning("⚠️ لتفعيل السحب المالي، يرجى إضافة مفتاح Stripe في إعدادات الأسرار (Secrets).")
+            st.warning("⚠️ لتفعيل السحب، أضف مفتاح Stripe في الأسرار (Secrets).")
 
 st.write("---")
-if st.button("🔄 تحديث الشاشة يدويأ"):
+if st.button("🔄 تحديث الشاشة يدويّاً"):
     st.rerun()
