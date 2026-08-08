@@ -34,7 +34,6 @@ with st.sidebar:
                         author = data.get("by", "مطور مستقل")
                         
                         if keyword.lower() in title.lower():
-                            # توليد مقترح هندسي حقيقي بناءً على عنوان المشروع
                             proposal = f"مرحباً، لاحظت مشروعكم ({title}). بصفتي مهندس برمجيات، يمكنني مساعدتكم في تحسين كفاءة البنية التحتية، تسريع الأداء، وتخفيض تكاليف التشغيل بنسبة تصل إلى 40% عبر هندسة الأنظمة المتقدمة."
                             
                             mined_leads.append({
@@ -51,7 +50,7 @@ with st.sidebar:
                 else:
                     st.warning("⚠️ لم يتم العثور على نتائج مطابقة، جرب كلمة بحث أخرى.")
         except Exception as e:
-            st.error(fحدث خطأ أثناء الاتصال: {e}")
+            st.error(f"حدث خطأ أثناء الاتصال: {e}")
 
 if "mined_data" in st.session_state:
     st.markdown("---")
