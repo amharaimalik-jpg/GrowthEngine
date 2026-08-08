@@ -11,14 +11,12 @@ import google.generativeai as genai
 import pandas as pd
 from datetime import datetime
 
-# 1. إعدادات الصفحة
 st.set_page_config(
     page_title="Growth Engine - Ultra Autonomous System",
     page_icon="⚡",
     layout="wide",
 )
 
-# 2. إعداد المفاتيح والأسرار بأمان من الـ Secrets
 try:
     stripe.api_key = str(st.secrets.get("STRIPE_LIVE_KEY", "")).strip()
     raw_google_keys = str(st.secrets.get("GOOGLE_API_KEY", "")).strip()
@@ -29,15 +27,12 @@ except Exception:
     GOOGLE_API_KEYS = []
     SEARCH_ENGINE_ID = ""
 
-# تفعيل مفتاح جوجل للذكاء الاصطناعي المجاني
 gemini_key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
 if gemini_key:
     genai.configure(api_key=gemini_key)
 
 DB_NAME = "autonomous_bot_pro.db"
 
-
-# 3. إعداد قاعدة البيانات
 def init_db():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     cursor = conn.cursor()
@@ -68,11 +63,8 @@ def init_db():
         conn.commit()
     conn.close()
 
-
 init_db()
 
-
-# --- محرك الإرسال الآلي للإيميلات ---
 def send_autonomous_email(target_email, subject, ai_message):
     sender_email = str(st.secrets.get("MY_EMAIL", "")).strip()
     sender_password = str(st.secrets.get("MY_EMAIL_PASSWORD", "")).strip()
@@ -96,8 +88,6 @@ def send_autonomous_email(target_email, subject, ai_message):
     except Exception as e:
         return f"❌ فشل الإرسال: {e}"
 
-
-# 4. واجهة المستخدم الذكية
 st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
 st.success("🟢 النظام يعمل مجاناً بكامل طاقته عبر ذكاء Gemini الاصطناعي!")
 
@@ -170,12 +160,13 @@ with tab2:
 
         with st.chat_message("assistant"):
             if gemini_key:
-                system_instruction = f"""أنت مدير مبيعات خبير. العميل المستهدف: {selected_company}.
-                مهمتك: صياغة رسالة بريد إلكتروني احترافية جداً مستخدماً استراتيجية (AIDA: Attention, Interest, Desire, Action) لخدمة نظام النمو بقيمة 2000 دولار. اكتب نص الإيميل فقط دون شروحات."""
+                full_query = f"""أنت مدير مبيعات خبير وعالمي. العميل المستهدف: {selected_company}.
+                خدمتنا هي 'Autonomous Growth System' بقيمة 2000 دولار.
+                صيغ رسالة بريد إلكتروني احترافية جداً مستخدماً استراتيجية (AIDA: Attention, Interest, Desire, Action) بناءً على طلب المستخدم التالي: {full_user_prompt}
+                اكتب نص الإيميل التسويقي فقط دون شروحات جانبية."""
                 try:
-                    model = genai.GenerativeModel(model_name="gemini-pro", system_instruction=system_instruction)
-                    chat = model.start_chat(history=[])
-                    response = chat.send_message(full_user_prompt)
+                    model = genai.GenerativeModel("gemini-1.5-flash")
+                    response = model.generate_content(full_query)
                     ai_response = response.text
                 except Exception as e:
                     ai_response = f"خطأ في الاتصال بـ Gemini: {e}"
@@ -216,7 +207,7 @@ with tab2:
 
 with tab3:
     st.subheader("💳 بوابة تحصيل الأرباح")
-    st.info("💡 بما أنك لا تمتلك حساباً بنكياً حالياً، يمكنك ترك بوابة Stripe معطلة، أو استخدام طرق بديلة لاحقاً عندما تبدأ بتحقيق المبيعات الفعلية واستلام الأرباح.")
+    st.info("💡 بما أنك لا تمتلك حساباً بنكياً حالياً، يمكنك ترك بوابة Stripe معطلة.")
 
 st.write("---")
 if st.button("🔄 تحديث الشاشة يدويّاً"):
