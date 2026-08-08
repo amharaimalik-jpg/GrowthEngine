@@ -18,7 +18,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# 2. إعداد المفاتيح والأسرار بأمان
+# 2. إعداد المفاتيح والأسرار بأمان من الـ Secrets
 try:
     stripe.api_key = str(st.secrets.get("STRIPE_LIVE_KEY", "")).strip()
     raw_google_keys = str(st.secrets.get("GOOGLE_API_KEY", "")).strip()
@@ -52,7 +52,6 @@ def init_db():
         )
     """
     )
-    # فحص إذا كانت القاعدة فارغة لإضافة بيانات أولية فورية
     cursor.execute("SELECT COUNT(*) FROM sales")
     if cursor.fetchone()[0] == 0:
         initial_companies = [
@@ -73,8 +72,8 @@ init_db()
 
 # --- محرك الإرسال الآلي للإيميلات ---
 def send_autonomous_email(target_email, subject, ai_message):
-    sender_email = st.secrets.get("MY_EMAIL", "").strip()
-    sender_password = st.secrets.get("MY_EMAIL_PASSWORD", "").strip()
+    sender_email = str(st.secrets.get("MY_EMAIL", "")).strip()
+    sender_password = str(st.secrets.get("MY_EMAIL_PASSWORD", "")).strip()
     
     if not sender_email or not sender_password:
         return "⚠️ خطأ: لم يتم إعداد إيميلك أو كلمة مرور التطبيقات في الأسرار (Secrets)."
@@ -138,7 +137,7 @@ class RobustGoogleSearch:
         return []
 
 
-# 5. روبوت البحث في الخلفية (يعمل 24/7)
+# 5. روبوت البحث في الخلفية
 def autonomous_search_bot():
     queries = [
         "digital marketing agency startup",
@@ -181,7 +180,7 @@ def start_bot_worker():
 start_bot_worker()
 
 
-# 6. واجهة المستخدم الذكية (Dashboard & Management)
+# 6. واجهة المستخدم الذكية
 st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
 st.success("🟢 النظام يعمل بكامل طاقته: يمسح الويب، يصيغ العروض بنظام AIDA، ويدير المتابعة الآلية!")
 
