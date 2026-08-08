@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import streamlit as st
 import stripe
-from openai import OpenAI
+import google.generativeai as genai
 import pandas as pd
 from datetime import datetime
 
@@ -29,13 +29,15 @@ except Exception:
     GOOGLE_API_KEYS = []
     SEARCH_ENGINE_ID = ""
 
-openai_key = str(st.secrets.get("OPENAI_API_KEY", "")).strip()
-client = OpenAI(api_key=openai_key) if openai_key else None
+# تفعيل مفتاح جوجل للذكاء الاصطناعي المجاني
+gemini_key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
+if gemini_key:
+    genai.configure(api_key=gemini_key)
 
 DB_NAME = "autonomous_bot_pro.db"
 
 
-# 3. إعداد قاعدة البيانات مع إدراج شركات أولية افتراضية للتأكد من ظهور الجدول فوراً
+# 3. إعداد قاعدة البيانات
 def init_db():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     cursor = conn.cursor()
@@ -95,94 +97,9 @@ def send_autonomous_email(target_email, subject, ai_message):
         return f"❌ فشل الإرسال: {e}"
 
 
-# 4. كلاس البحث الذكي ومحرك جوجل
-class RobustGoogleSearch:
-    def __init__(self, api_keys, search_engine_id):
-        self.api_keys = api_keys if isinstance(api_keys, list) else [api_keys]
-        self.cx = search_engine_id
-        self.current_key_index = 0
-
-    def get_current_key(self):
-        if not self.api_keys:
-            return ""
-        return self.api_keys[self.current_key_index]
-
-    def rotate_key(self):
-        if len(self.api_keys) > 1:
-            self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
-
-    def search(self, query, num_results=5, retries=3):
-        url = "https://www.googleapis.com/customsearch/v1"
-        for attempt in range(retries):
-            api_key = self.get_current_key()
-            if not api_key:
-                return []
-
-            params = {
-                "key": api_key,
-                "cx": self.cx,
-                "q": query,
-                "num": min(num_results, 10),
-            }
-            try:
-                response = requests.get(url, params=params, timeout=10)
-                if response.status_code == 200:
-                    return response.json().get("items", [])
-                elif response.status_code in [403, 429]:
-                    self.rotate_key()
-                else:
-                    time.sleep(2)
-            except Exception:
-                time.sleep(2 ** attempt)
-        return []
-
-
-# 5. روبوت البحث في الخلفية
-def autonomous_search_bot():
-    queries = [
-        "digital marketing agency startup",
-        "software development company website",
-        "ecommerce tech startup business",
-    ]
-    searcher = RobustGoogleSearch(GOOGLE_API_KEYS, SEARCH_ENGINE_ID)
-    while True:
-        if GOOGLE_API_KEYS and SEARCH_ENGINE_ID:
-            for q in queries:
-                try:
-                    items = searcher.search(q, num_results=3)
-                    if items:
-                        conn = sqlite3.connect(DB_NAME, check_same_thread=False)
-                        cursor = conn.cursor()
-                        for item in items:
-                            company_name = item.get("title", "شركة مستهدفة")
-                            cursor.execute("SELECT id FROM sales WHERE client_name = ?", (company_name,))
-                            if not cursor.fetchone():
-                                cursor.execute(
-                                    "INSERT INTO sales (client_name, client_email, amount, status, outreach_status, last_contact_date) VALUES (?, ?, ?, ?, ?, ?)",
-                                    (company_name, "info@" + company_name.lower().replace(" ", "").replace("-", "")[:10] + ".com", 2000.0, "lead", "تم الرصد.. بانتظار التفاوض", str(datetime.now().date())),
-                                )
-                                conn.commit()
-                        conn.close()
-                except Exception:
-                    pass
-                time.sleep(20)
-        else:
-            time.sleep(30)
-        time.sleep(3600)
-
-
-@st.cache_resource
-def start_bot_worker():
-    t = threading.Thread(target=autonomous_search_bot, daemon=True)
-    t.start()
-    return "Running"
-
-start_bot_worker()
-
-
-# 6. واجهة المستخدم الذكية
+# 4. واجهة المستخدم الذكية
 st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
-st.success("🟢 النظام يعمل بكامل طاقته: يمسح الويب، يصيغ العروض بنظام AIDA، ويدير المتابعة الآلية!")
+st.success("🟢 النظام يعمل مجاناً بكامل طاقته عبر ذكاء Gemini الاصطناعي!")
 
 def get_data():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
@@ -214,17 +131,17 @@ c4.metric("إجمالي الأرباح", f"${total_earnings:,.2f} USD")
 
 st.write("---")
 
-tab1, tab2, tab3 = st.tabs(["🌐 رادار الشركات والتحليلات", "🤖 وكيل المبيعات الذكي (AIDA & Auto-Email)", "💳 بوابة تحصيل الأرباح"])
+tab1, tab2, tab3 = st.tabs(["🌐 رادار الشركات والتحليلات", "🤖 وكيل المبيعات الذكي (Gemini AIDA)", "💳 بوابة تحصيل الأرباح"])
 
 with tab1:
     st.subheader("🌐 جدول العمليات الحية وقاعدة بيانات الصفقات")
     if data:
         st.dataframe(pd.DataFrame(data), use_container_width=True)
     else:
-        st.info("⏳ جاري جلب الشركات الأولى من الإنترنت.. انتظر لحظات.")
+        st.info("⏳ جاري جلب الشركات الأولى..")
 
 with tab2:
-    st.subheader("💬 وكيل المبيعات الذكي (تقنية AIDA المتقدمة)")
+    st.subheader("💬 وكيل المبيعات الذكي المجاني (Gemini)")
     
     if data:
         company_options = [row["client_name"] for row in data]
@@ -235,7 +152,6 @@ with tab2:
     else:
         selected_company = "شركة افتراضية"
         default_email = ""
-        st.info("لا توجد شركات مرصودة حالياً.")
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -244,7 +160,7 @@ with tab2:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    pain_point = st.text_input("💡 (نصيحة 1) حدد نقطة ألم العميل أو أمر خاص للوكيل:", "ركز على مضاعفة المبيعات وتوفير الوقت")
+    pain_point = st.text_input("💡 حدد نقطة ألم العميل أو أمر خاص للوكيل:", "ركز على مضاعفة المبيعات وتوفير الوقت")
 
     if prompt := st.chat_input("اطلب من الوكيل صياغة الرد أو العرض..."):
         full_user_prompt = f"الهدف: {prompt} | نقطة الألم المستهدفة: {pain_point}"
@@ -253,30 +169,24 @@ with tab2:
             st.markdown(full_user_prompt)
 
         with st.chat_message("assistant"):
-            if client:
-                system_prompt = f"""أنت مدير مبيعات خبير وعالمي. العميل المستهدف: {selected_company}.
-                خدمتنا هي 'Autonomous Growth System' بقيمة 2000 دولار.
-                مهمتك: صياغة رسالة بريد إلكتروني احترافية جداً مستخدماً استراتيجية (AIDA: Attention, Interest, Desire, Action). 
-                اجعل النص مقنعاً، مباشراً، ويخاطب نقطة الألم المذكورة. لا تضع شروحات جانبية، اكتب نص الإيميل فقط."""
+            if gemini_key:
+                system_instruction = f"""أنت مدير مبيعات خبير. العميل المستهدف: {selected_company}.
+                مهمتك: صياغة رسالة بريد إلكتروني احترافية جداً مستخدماً استراتيجية (AIDA: Attention, Interest, Desire, Action) لخدمة نظام النمو بقيمة 2000 دولار. اكتب نص الإيميل فقط دون شروحات."""
                 try:
-                    response = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[{"role": "system", "content": system_prompt}]
-                        + [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-                    )
-                    ai_response = response.choices[0].message.content
+                    model = genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=system_instruction)
+                    chat = model.start_chat(history=[])
+                    response = chat.send_message(full_user_prompt)
+                    ai_response = response.text
                 except Exception as e:
-                    ai_response = f"خطأ في الاتصال بـ OpenAI: {e}"
+                    ai_response = f"خطأ في الاتصال بـ Gemini: {e}"
             else:
-                ai_response = "يرجى إضافة مفتاح OPENAI_API_KEY في الأسرار."
+                ai_response = "يرجى إضافة مفتاح GEMINI_API_KEY في الأسرار."
 
             st.markdown(ai_response)
             st.session_state.messages.append({"role": "assistant", "content": ai_response})
 
     st.write("---")
     st.markdown("### 🚀 الإرسال الآلي والتعديل البشري الذكي")
-    st.info("✍️ (نصيحة 2) يمكنك مراجعة النص أعلاه وتعديل الاسم أو إضافة لمسة بشرية قبل التفويض بالإرسال.")
-    
     target_client_email = st.text_input("إيميل العميل المستهدف للإرسال:", value=default_email)
     
     if st.button("🚀 تفويض الوكيل بإرسال الإيميل وتسجيل المتابعة"):
@@ -305,32 +215,8 @@ with tab2:
                     st.error(result)
 
 with tab3:
-    st.subheader("💳 بوابة تحصيل الأرباح الآمنة")
-    if st.button("💳 توليد رابط دفع Stripe بقيمة $2,000"):
-        if stripe.api_key:
-            try:
-                checkout_session = stripe.checkout.Session.create(
-                    payment_method_types=["card"],
-                    line_items=[
-                        {
-                            "price_data": {
-                                "currency": "usd",
-                                "product_data": {"name": "Autonomous Growth System"},
-                                "unit_amount": int(2000 * 100),
-                            },
-                            "quantity": 1,
-                        }
-                    ],
-                    mode="payment",
-                    success_url="https://streamlit.io?success=true",
-                    cancel_url="https://streamlit.io?canceled=true",
-                )
-                st.markdown(f'<meta http-equiv="refresh" content="0;url={checkout_session.url}">', unsafe_allow_html=True)
-                st.success("🔄 جاري تحويلك لبوابة الدفع الحية...")
-            except Exception as e:
-                st.error(f"خطأ في بوابة الدفع: {e}")
-        else:
-            st.warning("⚠️ لتفعيل السحب، أضف مفتاح Stripe في الأسرار (Secrets).")
+    st.subheader("💳 بوابة تحصيل الأرباح")
+    st.info("💡 بما أنك لا تمتلك حساباً بنكياً حالياً، يمكنك ترك بوابة Stripe معطلة، أو استخدام طرق بديلة لاحقاً عندما تبدأ بتحقيق المبيعات الفعلية واستلام الأرباح.")
 
 st.write("---")
 if st.button("🔄 تحديث الشاشة يدويّاً"):
