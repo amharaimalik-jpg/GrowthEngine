@@ -1,14 +1,12 @@
 import streamlit as st
 from engine import AutonomousEngine
-from wallet_manager import WalletManager
 
 engine = AutonomousEngine()
-wallet = WalletManager()
 
-st.set_page_config(page_title="GrowthEngine | Autonomous B2B System", layout="wide")
+st.set_page_config(page_title="GrowthEngine | Live B2B System", layout="wide")
 
-st.title("🎯 GrowthEngine: نظام الاستحواذ والتوسع الذاتي")
-st.write("محرك رقمي متكامل لتشخيص فجوات الشركات، توليد حملات الانتشار، وإدارة التحويلات المالية ذاتياً.")
+st.title("🎯 GrowthEngine: نظام الاستحواذ والتوسع الذاتي (حقيقي)")
+st.write("محرك رقمي متكامل لتشخيص فجوات الشركات، توليد حملات الانتشار، وإدارة التحويلات المالية الحقيقية.")
 
 # مدخلات العميل الذكية
 col1, col2 = st.columns(2)
@@ -19,9 +17,7 @@ with col2:
 
 if st.button("🚀 تشغيل محرك التشخيص والانتشار التلقائي"):
     if niche:
-        # توليد التقرير
         report = engine.generate_growth_report(niche, company_size)
-        # توليد محتوى الانتشار والاستهداف (المساران مزعوران في الكود)
         assets = engine.generate_outreach_assets(niche)
         
         st.divider()
@@ -36,17 +32,16 @@ if st.button("🚀 تشغيل محرك التشخيص والانتشار الت�
         st.warning(f"⚠️ **نتيجة الفحص:** {report['diagnostic']}")
         
         st.divider()
-        st.subheader("🧬 أصول الانتشار والاستهداف المولدّة ذاتياً بواسطة النظام")
-        st.write("هذه النصوص يتم إنشاؤها تلقائياً بواسطة المحرك لضمان الانتشار بدون تدخل بشري:")
+        st.subheader("🧬 أصول الانتشار والاستهداف المولدّة ذاتياً")
         st.text_area("نص النشر المجتمعي (Viral Post):", assets['viral_post'])
         st.text_area("نص الاستهداف المباشر (Cold Outreach):", assets['cold_email'])
         
         st.divider()
-        st.subheader("🔒 تفعيل النظام الآلي الكامل (الاستحواذ التلقائي)")
-        st.write("لإطلاق النظام ليعمل بشكل ذاتي تماماً ويجلب هؤلاء العملاء إلى محفظتك، يتم تفعيل العقد الذكي للخدمة الشاملة بقيمة **$5,000**.")
+        st.subheader("🔒 تفعيل النظام الآلي الكامل (العقد الحقيقي بقيمة $5,000)")
+        st.write("لإطلاق النظام وبدء الاستحواذ الفعلي لصالح العميل، يرجى إتمام تحويل قيمة الخدمة (5,000 USDT) حصراً عبر شبكة **BEP20** إلى عنوان محفظتك الرسمي أدناه:")
         
-        # عرض محفظتك لإتمام التحويل الفوري
-        st.code("Trust Wallet Address (USDT / Crypto): 0xYourTrustWalletAddressHere")
-        st.success("بمجرد إتمام التحويل، سيقوم النظام بربط عقدتك الذكية وبدء مهام الاستحواذ تلقائياً في الخلفية.")
+        # عرض عنوان محفظتك الحقيقي الذي أرسلته
+        st.code("0xD7709Dc72614240B065416D17c662Ee124654c78")
+        st.success("بمجرد إرسال المبلغ من قبل العميل وتأكيده على شبكة البلوكشين، ستصل الأموال فوراً إلى تطبيق Trust Wallet الخاص بك.")
     else:
         st.error("يرجى إدخال مجال العمل للبدء.")
