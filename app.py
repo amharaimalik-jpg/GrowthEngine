@@ -173,7 +173,7 @@ with tab2:
                 system_instruction = f"""أنت مدير مبيعات خبير. العميل المستهدف: {selected_company}.
                 مهمتك: صياغة رسالة بريد إلكتروني احترافية جداً مستخدماً استراتيجية (AIDA: Attention, Interest, Desire, Action) لخدمة نظام النمو بقيمة 2000 دولار. اكتب نص الإيميل فقط دون شروحات."""
                 try:
-                    model = genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=system_instruction)
+                    model = genai.GenerativeModel(model_name="gemini-pro", system_instruction=system_instruction)
                     chat = model.start_chat(history=[])
                     response = chat.send_message(full_user_prompt)
                     ai_response = response.text
