@@ -33,7 +33,6 @@ def init_db():
 
 init_db()
 
-# عنوان المحفظة الحقيقي الذي كتبته في ورقتك
 MY_EXACT_WALLET = "TQWzQdUhanott9zGsnjU2KFYscxWYgLL"
 
 with st.sidebar:
@@ -46,20 +45,6 @@ with st.sidebar:
     st.subheader("💎 محفظة Trust Wallet (TRC20)")
     wallet_address = st.text_input("العنوان المعتمد:", value=MY_EXACT_WALLET)
     st.success("🟢 تم تثبيت عنوان محفظتك الحقيقي بنجاح.")
-
-def call_gemini(prompt, api_key):
-    if not api_key:
-        return "عزيزي العميل، نقدم حلول هندسة البرمجيات والذكاء الاصطناعي لتطوير أعمالكم."
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-    headers = {"Content-Type": "application/json"}
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    try:
-        response = requests.post(url, headers=headers, json=payload, timeout=20)
-        if response.status_code == 200:
-            return response.json()["candidates"][0]["content"]["parts"][0]["text"]
-    except Exception:
-        pass
-    return "عزيزي العميل، نقدم حلول هندسة البرمجيات والذكاء الاصطناعي لتطوير أعمالكم."
 
 def send_email(target_email, subject, message, sender_email, sender_pass, wallet):
     full_msg = f"{message}\n\n-----------------------------------\nلتأكيد التعاقد وبدء العمل، يرجى تحويل مبلغ $2000 USDT (شبكة TRC20) إلى محفظتي الرسمية التالية:\n{wallet}\n-----------------------------------"
@@ -79,8 +64,8 @@ def send_email(target_email, subject, message, sender_email, sender_pass, wallet
     except Exception as e:
         return False, str(e)
 
-st.title("💎 Growth Engine - الوكيل المستقل بمحفظتك الحقيقية")
-st.success("🟢 النظام متصل ومبرمج آلياً لدمج عنوان محفظتك (TRC20) وقيمة عقد 2000$ في كل رسالة تُرسل للشركات الحقيقية.")
+st.title("💎 Growth Engine - الإدخال المباشر للشركات الحقيقية")
+st.success("🟢 النظام جاهز تماماً. أضف الشركات المستهدفة وسيتكفل النظام بإرسال العروض وعنوان محفظتك وقيمة 2000$.")
 
 def get_data():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
@@ -96,53 +81,35 @@ total = sum(float(i["amount"]) for i in closed)
 
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("الشركات المرصودة", f"{len(data)} شركة")
-c2.metric("حالة الوكيل", "يعمل باستقلالية 🤖")
+c2.metric("حالة الوكيل", "جاهز للتنفيذ 🤖")
 c3.metric("العقود المدفوعة", f"{len(closed)} عقد")
 c4.metric("الأرباح المحصلة", f"${total:,.2f} USD")
 
 st.markdown("---")
 
-col1, col2 = st.columns(2)
+st.subheader("➕ إضافة شركة حقيقية للجدول فورا")
+with st.form("add_client"):
+    c_name_input = st.text_input("اسم الشركة الحقيقية (مثال: Vortex Tech):")
+    c_email_input = st.text_input("البريد الإلكتروني للشركة:")
+    submitted = st.form_submit_button("إضافة الشركة وتثبيت عقد 2000$ 🟢")
+    if submitted and c_name_input and c_email_input:
+        conn = sqlite3.connect(DB_NAME, check_same_thread=False)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO sales (client_name, client_email, amount, status, outreach_status) VALUES (?, ?, ?, ?, ?)",
+                       (c_name_input, c_email_input, 2000.0, "lead", "جاهز للإرسال 🟢"))
+        conn.commit()
+        conn.close()
+        st.success("✅ تمت إضافة الشركة بنجاح وظهرت في الجدول بالأسفل!")
+        st.rerun()
 
-with col1:
-    if st.button("🌐 الخطوة 1: جلب الشركات الحقيقية وبريدها آلياً", type="primary"):
-        if not gemini_key:
-            st.error("⚠️ يرجى إدخال مفتاح Gemini API في الشريط الجانبي.")
-        else:
-            with st.spinner("جاري استخبارات السوق وجلب الشركات مع بريدها وقيمة 2000$..."):
-                prompt = """قم بتوليد قائمة لـ 3 شركات تقنية وناشئة حقيقية مع بريدها الإلكتروني الرسمي للتواصل. الصيغة بالضبط لكل سطر:
-                اسم الشركة | البريد الإلكتروني
-                مثال:
-                Vortex AI Labs | contact@vortexailabs.com
-                Nova Software | info@novasoftware.io
-                SaaSify Tech | support@saasifytech.co"""
-                
-                output = call_gemini(prompt, gemini_key)
-                lines = output.strip().split("\n")
-                
-                conn = sqlite3.connect(DB_NAME, check_same_thread=False)
-                cursor = conn.cursor()
-                
-                added = 0
-                for line in lines:
-                    if "|" in line:
-                        parts = line.split("|")
-                        c_name = parts[0].strip()
-                        c_email = parts[1].strip()
-                        cursor.execute("SELECT COUNT(*) FROM sales WHERE client_email = ?", (c_email,))
-                        if cursor.fetchone()[0] == 0 and "@" in c_email:
-                            cursor.execute("INSERT INTO sales (client_name, client_email, amount, status, outreach_status) VALUES (?, ?, ?, ?, ?)",
-                                           (c_name, c_email, 2000.0, "lead", "جاهز للإرسال 🟢"))
-                            added += 1
-                conn.commit()
-                conn.close()
-                st.success(f"🎉 تم جلب {added} شركة حقيقية بنجاح!")
-                st.rerun()
-
-with col2:
-    if st.button("🚀 الخطوة 2: إرسال العروض وعنوان محفظتك لكل الشركات", type="primary"):
-        if not gemini_key or not my_email or not my_pass:
-            st.error("⚠️ يرجى التأكد من إدخال مفتاح Gemini وكلمة مرور Gmail في الشريط الجانبي.")
+st.markdown("---")
+st.subheader("🌐 جدول العمليات والشركات المستهدفة")
+if data:
+    st.dataframe(pd.DataFrame(data), use_container_width=True)
+    
+    if st.button("🚀 إرسال العروض وعنوان محفظتك لكل الشركات المضافة", type="primary"):
+        if not my_email or not my_pass:
+            st.error("⚠️ يرجى إدخال بيانات الـ Gmail في الشريط الجانبي.")
         else:
             conn = sqlite3.connect(DB_NAME, check_same_thread=False)
             cursor = conn.cursor()
@@ -151,13 +118,11 @@ with col2:
             
             sent_count = 0
             for name, email in targets:
-                msg_prompt = f"اكتب رسالة بريد إلكتروني تسويقية لشركة {name} لعرض نظام هندسة نمو وتطوير تقني بقيمة 2000 دولار."
-                ai_text = call_gemini(msg_prompt, gemini_key)
-                
+                default_msg = f"عزيزي فريق شركة {name},\n\nنود عرض شراكة استراتيجية لتطوير وتنفيذ أنظمة هندسة البرمجيات المتقدمة لشركتكم بكفاءة عالية."
                 success, _ = send_email(
                     target_email=email,
                     subject=f"شراكة استراتيجية تقنية لشركة {name}",
-                    message=ai_text,
+                    message=default_msg,
                     sender_email=my_email,
                     sender_pass=my_pass,
                     wallet=wallet_address
@@ -168,15 +133,10 @@ with col2:
                     
             conn.commit()
             conn.close()
-            st.success(f"🚀 تم إرسال العروض متضمنة محفظتك لـ {sent_count} شركة بنجاح!")
+            st.success(f"🚀 تم إرسال العروض لـ {sent_count} شركة بنجاح!")
             st.rerun()
-
-st.markdown("---")
-st.subheader("🌐 جدول العمليات والشركات المستهدفة")
-if data:
-    st.dataframe(pd.DataFrame(data), use_container_width=True)
 else:
-    st.info("لا توجد شركات مسجلة. اضغط على 'الخطوة 1' بالاعلى ليبدأ الوكيل عمله.")
+    st.info("لا توجد شركات مسجلة حالياً. استخدم نموذج الإضافة بالأعلى لإضافة شركة وابدأ العمل فوراً.")
 
 st.markdown("---")
 st.subheader("💳 تأكيد تحصيل الأموال في محفظتك")
@@ -193,7 +153,3 @@ if data:
             conn.close()
             st.success("🎉 تم تحديث رصيد أرباحك الفعلية بنجاح!")
             st.rerun()
-
-st.write("---")
-if st.button("🔄 تحديث الشاشة"):
-    st.rerun()
