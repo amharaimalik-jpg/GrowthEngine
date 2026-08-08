@@ -13,11 +13,6 @@ st.set_page_config(
     layout="wide",
 )
 
-try:
-    gemini_key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
-except Exception:
-    gemini_key = ""
-
 DB_NAME = "autonomous_bot_pro.db"
 
 def init_db():
@@ -52,16 +47,33 @@ def init_db():
 
 init_db()
 
-# --- محرك الاتصال المباشر المتوافق 100% مع جميع مفاتيح AI Studio ---
-def call_gemini_safe(prompt_text):
-    if not gemini_key:
-        return "⚠️ خطأ: لم يتم العثور على مفتاح GEMINI_API_KEY في إعدادات الأسرار (Secrets)."
+# --- الشريط الجانبي لإدخال المفاتيح والإعدادات بمرونة تامة ---
+with st.sidebar:
+    st.header("⚙️ إعدادات النظام والاتصال")
     
-    # قائمة الروابط والنماذج البديلة لتفادي أي رفض للمفتاح
+    # محاولة جلب المفتاح من الأسرار إن وجد، أو السماح بإدخاله يدوياً
+    secret_key = ""
+    try:
+        secret_key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
+    except Exception:
+        pass
+        
+    gemini_key_input = st.text_input("مفتاح Gemini API Key:", value=secret_key, type="password")
+    
+    st.markdown("---")
+    st.subheader("إعدادات البريد الإلكتروني (اختياري للإرسال)")
+    my_email_input = st.text_input("بريدك الإلكتروني:", value=str(st.secrets.get("MY_EMAIL", "") if "st.secrets" in globals() else ""))
+    my_pass_input = st.text_input("كلمة مرور التطبيق:", type="password", value=str(st.secrets.get("MY_EMAIL_PASSWORD", "") if "st.secrets" in globals() else ""))
+
+# --- محرك الاتصال المباشر بنماذج Gemini ---
+def call_gemini_safe(prompt_text, api_key):
+    if not api_key:
+        return "⚠️ تنبيه: يرجى إدخال مفتاح Gemini API Key في الشريط الجانبي (Sidebar) على اليمين لتفعيل الوكيل."
+    
     endpoints = [
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}",
-        f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={gemini_key}",
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_key}"
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
+        f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}",
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
     ]
     
     headers = {"Content-Type": "application/json"}
@@ -80,17 +92,18 @@ def call_gemini_safe(prompt_text):
                     text_out = res_json["candidates"][0]["content"]["parts"][0]["text"]
                     if text_out:
                         return text_out
+            elif response.status_code == 403:
+                return "❌ خطأ 403: مفتاح الـ API غير صالح أو ليس لديه الصلاحية الكافية."
+            elif response.status_code == 400:
+                return "❌ خطأ 400: صيغة الطلب غير صالحة أو المفتاح غير مفعل."
         except Exception:
             continue
             
-    return "❌ عذراً، تأكد من صحة مفتاح الـ API في إعدادات Streamlit Secrets وأنه مفعل بشكل صحيح."
+    return "❌ تعذر الاتصال بخوادم جوجل، تأكد من صحة المفتاح المدخل."
 
-def send_autonomous_email(target_email, subject, ai_message):
-    sender_email = str(st.secrets.get("MY_EMAIL", "")).strip()
-    sender_password = str(st.secrets.get("MY_EMAIL_PASSWORD", "")).strip()
-    
+def send_autonomous_email(target_email, subject, ai_message, sender_email, sender_password):
     if not sender_email or not sender_password:
-        return "⚠️ خطأ: لم يتم إعداد البريد أو كلمة المرور في الأسرار."
+        return "⚠️ خطأ: لم يتم إعداد بريد المرسل أو كلمة المرور في الشريط الجانبي."
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -109,7 +122,7 @@ def send_autonomous_email(target_email, subject, ai_message):
         return f"❌ فشل الإرسال: {e}"
 
 st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
-st.success("🟢 النظام يعمل مجاناً 100% بكفاءة عالية!")
+st.success("🟢 النظام يعمل بكفاءة عالية! أدخل مفتاحك في القائمة الجانبية وابدأ العمل فوراً.")
 
 def get_data():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
@@ -179,16 +192,13 @@ with tab2:
             st.markdown(full_user_prompt)
 
         with st.chat_message("assistant"):
-            if gemini_key:
-                full_query = f"""أنت مدير مبيعات خبير. العميل المستهدف: {selected_company}.
-                خدمتنا هي 'Autonomous Growth System' بقيمة 2000 دولار.
-                صيغ رسالة بريد إلكتروني احترافية مستخدماً استراتيجية (AIDA) بناءً على طلب المستخدم التالي: {full_user_prompt}
-                اكتب نص الإيميل التسويقي فقط دون شروحات جانبية."""
-                
-                with st.spinner("جاري صياغة الرد الذكي..."):
-                    ai_response = call_gemini_safe(full_query)
-            else:
-                ai_response = "يرجى إضافة مفتاح GEMINI_API_KEY في الأسرار."
+            full_query = f"""أنت مدير مبيعات خبير. العميل المستهدف: {selected_company}.
+            خدمتنا هي 'Autonomous Growth System' بقيمة 2000 دولار.
+            صيغ رسالة بريد إلكتروني احترافية مستخدماً استراتيجية (AIDA) بناءً على طلب المستخدم التالي: {full_user_prompt}
+            اكتب نص الإيميل التسويقي فقط دون شروحات جانبية."""
+            
+            with st.spinner("جاري صياغة الرد الذكي..."):
+                ai_response = call_gemini_safe(full_query, gemini_key_input)
 
             st.markdown(ai_response)
             st.session_state.messages.append({"role": "assistant", "content": ai_response})
@@ -209,7 +219,9 @@ with tab2:
                 result = send_autonomous_email(
                     target_email=target_client_email,
                     subject=f"فرصة نمو استراتيجية لشركة {selected_company}",
-                    ai_message=last_ai_message
+                    ai_message=last_ai_message,
+                    sender_email=my_email_input,
+                    sender_password=my_pass_input
                 )
                 if "✅" in result:
                     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
