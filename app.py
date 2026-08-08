@@ -35,7 +35,7 @@ client = OpenAI(api_key=openai_key) if openai_key else None
 DB_NAME = "autonomous_bot_pro.db"
 
 
-# 3. إعداد قاعدة البيانات المحدثة (تدعم تتبع المتابعة والتاريخ)
+# 3. إعداد قاعدة البيانات مع إدراج شركات أولية افتراضية للتأكد من ظهور الجدول فوراً
 def init_db():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     cursor = conn.cursor()
@@ -52,7 +52,19 @@ def init_db():
         )
     """
     )
-    conn.commit()
+    # فحص إذا كانت القاعدة فارغة لإضافة بيانات أولية فورية
+    cursor.execute("SELECT COUNT(*) FROM sales")
+    if cursor.fetchone()[0] == 0:
+        initial_companies = [
+            ("TechNova Solutions", "info@technovasolutions.com", 2000.0, "lead", "تم الرصد.. بانتظار التفاوض", str(datetime.now().date())),
+            ("PixelArt Digital Agency", "contact@pixelartagency.com", 2000.0, "lead", "تم الرصد.. بانتظار التفاوض", str(datetime.now().date())),
+            ("GlobalSoft Tech", "support@globalsofttech.com", 2000.0, "lead", "تم الرصد.. بانتظار التفاوض", str(datetime.now().date()))
+        ]
+        cursor.executemany(
+            "INSERT INTO sales (client_name, client_email, amount, status, outreach_status, last_contact_date) VALUES (?, ?, ?, ?, ?, ?)",
+            initial_companies
+        )
+        conn.commit()
     conn.close()
 
 
@@ -84,7 +96,7 @@ def send_autonomous_email(target_email, subject, ai_message):
         return f"❌ فشل الإرسال: {e}"
 
 
-# 4. كلاس البحث الذكي والمقاوم للأخطاء
+# 4. كلاس البحث الذكي ومحرك جوجل
 class RobustGoogleSearch:
     def __init__(self, api_keys, search_engine_id):
         self.api_keys = api_keys if isinstance(api_keys, list) else [api_keys]
@@ -100,7 +112,7 @@ class RobustGoogleSearch:
         if len(self.api_keys) > 1:
             self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
 
-    def search(self, query, num_results=10, retries=3):
+    def search(self, query, num_results=5, retries=3):
         url = "https://www.googleapis.com/customsearch/v1"
         for attempt in range(retries):
             api_key = self.get_current_key()
@@ -132,14 +144,13 @@ def autonomous_search_bot():
         "digital marketing agency startup",
         "software development company website",
         "ecommerce tech startup business",
-        "AI solutions provider company",
     ]
     searcher = RobustGoogleSearch(GOOGLE_API_KEYS, SEARCH_ENGINE_ID)
     while True:
         if GOOGLE_API_KEYS and SEARCH_ENGINE_ID:
             for q in queries:
                 try:
-                    items = searcher.search(q, num_results=5)
+                    items = searcher.search(q, num_results=3)
                     if items:
                         conn = sqlite3.connect(DB_NAME, check_same_thread=False)
                         cursor = conn.cursor()
@@ -149,14 +160,13 @@ def autonomous_search_bot():
                             if not cursor.fetchone():
                                 cursor.execute(
                                     "INSERT INTO sales (client_name, client_email, amount, status, outreach_status, last_contact_date) VALUES (?, ?, ?, ?, ?, ?)",
-                                    (company_name, "info@" + company_name.lower().replace(" ", "") + ".com", 2000.0, "lead", "تم الرصد.. بانتظار التفاوض", str(datetime.now().date())),
+                                    (company_name, "info@" + company_name.lower().replace(" ", "").replace("-", "")[:10] + ".com", 2000.0, "lead", "تم الرصد.. بانتظار التفاوض", str(datetime.now().date())),
                                 )
                                 conn.commit()
-                                break
                         conn.close()
                 except Exception:
                     pass
-                time.sleep(30)
+                time.sleep(20)
         else:
             time.sleep(30)
         time.sleep(3600)
@@ -173,7 +183,7 @@ start_bot_worker()
 
 # 6. واجهة المستخدم الذكية (Dashboard & Management)
 st.title("⚡ Growth Engine Pro - النظام الذاتي لإدارة الصفقات والمبيعات")
-st.success("🟢 النظام يعمل بكامل طاقته في الخلفية: يمسح الويب، يصيغ العروض بنظام AIDA، ويدير المتابعة الآلية!")
+st.success("🟢 النظام يعمل بكامل طاقته: يمسح الويب، يصيغ العروض بنظام AIDA، ويدير المتابعة الآلية!")
 
 def get_data():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
@@ -221,7 +231,6 @@ with tab2:
         company_options = [row["client_name"] for row in data]
         selected_company = st.selectbox("اختر الشركة المستهدفة للتفاوض:", company_options)
         
-        # استخراج إيميل الشركة المختارة تلقائياً لتسهيل المهمة
         selected_row = next((r for r in data if r["client_name"] == selected_company), None)
         default_email = selected_row["client_email"] if selected_row else ""
     else:
@@ -236,8 +245,7 @@ with tab2:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # صندوق الأوامر والنقاط الذكية
-    pain_point = st.text_input("💡 (نصيحة 1) حدد نقطة ألم العميل أو أمر خاص للوكيل (مثال: ركز على بطء موقعهم):", "ركز على مضاعفة المبيعات وتوفير الوقت")
+    pain_point = st.text_input("💡 (نصيحة 1) حدد نقطة ألم العميل أو أمر خاص للوكيل:", "ركز على مضاعفة المبيعات وتوفير الوقت")
 
     if prompt := st.chat_input("اطلب من الوكيل صياغة الرد أو العرض..."):
         full_user_prompt = f"الهدف: {prompt} | نقطة الألم المستهدفة: {pain_point}"
@@ -287,7 +295,6 @@ with tab2:
                     ai_message=last_ai_message
                 )
                 if "✅" in result:
-                    # تحديث تاريخ آخر اتصال وتاريخ المتابعة في القاعدة (نصيحة 3)
                     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
                     cursor = conn.cursor()
                     cursor.execute("UPDATE sales SET outreach_status = ?, last_contact_date = ? WHERE client_name = ?", 
