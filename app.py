@@ -52,39 +52,38 @@ def init_db():
 
 init_db()
 
-# --- محرك الاتصال المباشر والمحدث بنماذج Gemini المتاحة ---
+# --- الاتصال المباشر المحدث بنسخة v1 القياسية ---
 def call_gemini_direct(prompt_text):
     if not gemini_key:
         return "⚠️ خطأ: لم يتم العثور على مفتاح GEMINI_API_KEY في الأسرار."
     
-    # تجربة النموذجين الأكثر ضماناً لتوافق مفاتيح AI Studio المجانية
-    models_to_try = ["gemini-1.5-flash-latest", "gemini-pro"]
+    # استخدام المسار الرسمي الثابت v1 مع نموذج flash
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+    headers = {"Content-Type": "application/json"}
+    payload = {
+        "contents": [{
+            "parts": [{"text": prompt_text}]
+        }]
+    }
     
-    for model_name in models_to_try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
-        headers = {"Content-Type": "application/json"}
-        payload = {
-            "contents": [{
-                "parts": [{"text": prompt_text}]
-            }]
-        }
-        
-        try:
-            response = requests.post(url, headers=headers, json=payload, timeout=15)
-            res_json = response.json()
-            if "candidates" in res_json and len(res_json["candidates"]) > 0:
-                return res_json["candidates"][0]["content"]["parts"][0]["text"]
-        except Exception:
-            continue
-            
-    return "❌ تعذر الاتصال بنماذج Gemini، يرجى التأكد من صلاحية المفتاح في Google AI Studio."
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=20)
+        res_json = response.json()
+        if "candidates" in res_json and len(res_json["candidates"]) > 0:
+            return res_json["candidates"][0]["content"]["parts"][0]["text"]
+        elif "error" in res_json:
+            return f"❌ خطأ من جوجل: {res_json['error'].get('message', 'خطأ غير معروف')}"
+        else:
+            return f"⚠️ استجابة غير متوقعة: {res_json}"
+    except Exception as e:
+        return f"❌ خطأ في الاتصال: {e}"
 
 def send_autonomous_email(target_email, subject, ai_message):
     sender_email = str(st.secrets.get("MY_EMAIL", "")).strip()
     sender_password = str(st.secrets.get("MY_EMAIL_PASSWORD", "")).strip()
     
     if not sender_email or not sender_password:
-        return "⚠️ خطأ: لم يتم إعداد إيميلك أو كلمة مرور التطبيقات في الأسرار."
+        return "⚠️ خطأ: لم يتم إعداد إيميلك أو كلمة مرور التطبيقات."
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
