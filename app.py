@@ -211,4 +211,4 @@ with tab3:
 
 st.write("---")
 if st.button("🔄 تحديث الشاشة يدويّاً"):
-    st.rerun()
+    st.rerun() 
