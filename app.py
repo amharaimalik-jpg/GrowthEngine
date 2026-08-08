@@ -60,8 +60,8 @@ with st.sidebar:
     
     st.markdown("---")
     st.subheader("إعدادات بريد الإرسال الفعلي (Gmail)")
-    my_email_input = st.text_input("بريدك الإلكتروني:", value="")
-    my_pass_input = st.text_input("كلمة مرور التطبيق:", type="password", value="")
+    my_email_input = st.text_input("بريدك الإلكتروني:", value="amharaimalik@gmail.com")
+    my_pass_input = st.text_input("كلمة مرور التطبيق:", type="password", value="malik@kilam/1234$4321")
 
     st.markdown("---")
     st.subheader("💳 ربط بوابة الدفع الحقيقية (Stripe)")
