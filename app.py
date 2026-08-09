@@ -3,7 +3,7 @@ import requests
 import hashlib
 import google.generativeai as genai
 
-st.set_page_config(page_title="GrowthEngine Viral System", layout="wide")
+st.set_page_config(page_title="GrowthEngine Viral System", layout="wide", initial_sidebar_state="collapsed")
 
 # Configure Gemini API safely from Streamlit Secrets or fallback
 try:
@@ -11,23 +11,25 @@ try:
 except:
     genai.configure(api_key="YOUR_GEMINI_API_KEY_HERE")
 
-# Professional English Welcome Message for Product Hunt
+# --- Professional Product Hunt Banner & Countdown Header ---
 st.markdown("""
-    <div style="background-color: #ff6154; padding: 15px; border-radius: 10px; text-align: center; color: white; margin-bottom: 20px;">
-        <h2>🚀 Welcome Product Hunt Community!</h2>
-        <p>You unlocked exclusive access to GrowthEngine. Enter your website below to run your 60-second web-gap analysis & activate your viral loop!</p>
+    <div style="background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%); padding: 20px; border-radius: 12px; text-align: center; color: white; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(76,175,80,0.3);">
+        <h1 style="margin: 0; font-size: 28px;">🚀 GrowthEngine: Success-Share Launch Pass</h1>
+        <p style="margin: 5px 0 0 0; font-size: 16px;">Instant Low-Barrier Access (197 USDT) + 10% Success Revenue Share</p>
     </div>
 """, unsafe_allow_html=True)
 
-st.title("GrowthEngine: Automated Acquisition & Viral System")
-st.markdown("A verifiable engineering platform featuring automated gap analysis, blockchain tracking, and an AI-powered autonomous response engine.")
-
-# 1. Define tabs first before using them
-tab1, tab2, tab3, tab4 = st.tabs(["Web-Gap Analysis & ROI", "Acquisition & Conversion Engine", "Viral Referral Infrastructure", "🤖 Autonomous AI Support Bot"])
+# Define tabs
+tab1, tab2, tab3, tab4 = st.tabs([
+    "📊 Web-Gap Analysis & ROI", 
+    "⚡ Success-Share Access (197 USDT)", 
+    "🌐 Exponential Viral Network", 
+    "🤖 Autonomous AI Support Bot"
+])
 
 with tab1:
     st.subheader("Automated Web-Gap Diagnostic & Live ROI Simulator")
-    target_url = st.text_input("Enter your target company URL")
+    target_url = st.text_input("Enter your target company URL (e.g., yourstartup.com)", key="target_url_input")
     
     col_a, col_b = st.columns(2)
     with col_a:
@@ -37,11 +39,11 @@ with tab1:
 
     if st.button("Run Deep Gap & ROI Analysis"):
         if target_url:
-            with st.spinner("Calculating real-time funnel leakages and revenue loss..."):
+            with st.spinner("Executing real-time funnel leakages and financial simulation..."):
                 monthly_loss = int(est_traffic * 0.034 * (avg_deal_value * 0.4))
                 annual_loss = monthly_loss * 12
                 
-                st.success("Diagnostic & Live Simulation Completed!")
+                st.success("Diagnostic & Live Simulation Completed Successfully!")
                 
                 m1, m2, m3 = st.columns(3)
                 m1.metric("Traffic Drop-off Rate", "34.2%", "-4.1% vs Benchmark")
@@ -49,63 +51,66 @@ with tab1:
                 m3.metric("Projected Annual Loss", f"${annual_loss:,}", "Urgent Fix Needed")
 
                 st.markdown(f"""
-                ### 📊 Live Financial Impact Report for `{target_url}`
+                ### 📈 Live Financial Impact Report for `{target_url}`
                 - **Conversion Friction:** Your current funnel routing is leaking approximately **34%** of high-intent visitors before checkout.
-                - **The Cost of Inaction:** You are leaving roughly **${monthly_loss:,}** on the table every single month due to sub-optimal calls to action.
-                - **Actionable Solution:** Proceed immediately to the **'Acquisition & Conversion Engine'** tab to deploy automated financial filtering.
+                - **The Cost of Inaction:** You are leaving roughly **${monthly_loss:,}** on the table every single month.
+                - **Actionable Solution:** Proceed immediately to the **'Success-Share Access'** tab to deploy your node for just 197 USDT.
                 """)
         else:
             st.warning("Please enter a valid URL first.")
 
 with tab2:
-    st.subheader("🔥 Product Hunt Exclusive Launch Engine & VIP Nodes")
-    st.markdown("🔒 *Secured via smart-contract tracking and automated escrow verification for PH Community.*")
+    st.subheader("🔥 Success-Share Access Node (197 USDT Entry)")
+    st.markdown("🔒 *Zero friction entry: Secure your instant node and align as a success-share partner.*")
     
     st.markdown("""
-        <div style="background-color: #fff3e0; border-left: 5px solid #ff9800; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-            <h3 style="color: #e65100; margin: 0 0 5px 0;">⚡ Product Hunt 24H Flash Pass (80% OFF)</h3>
-            <p style="color: #ef6c00; margin: 0; font-size: 15px; font-weight: bold;">
-                To celebrate our Product Hunt launch, the full enterprise deployment fee is slashed from <b>5,000 USDT</b> to an exclusive community rate of <b>997 USDT</b> for the next 24 hours only!
+        <div style="background-color: #e8f5e9; border-left: 5px solid #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #2e7d32; margin: 0 0 5px 0;">💎 Product Hunt Community Success Model</h3>
+            <p style="color: #388e3c; margin: 0; font-size: 14px; font-weight: bold;">
+                Pay a one-time low barrier fee of <b>197 USDT</b> to activate your system instantly. We win only when you win via a transparent 10% success-share on generated growth!
             </p>
         </div>
     """, unsafe_allow_html=True)
 
     coll, col2 = st.columns(2)
     with coll:
-        niche = st.text_input("Target Industry / Niche", key="niche_ph")
+        niche = st.text_input("Target Industry / Niche", key="niche_ph_success")
     with col2:
-        deployment_mode = st.selectbox("Select Launch Tier", ["Product Hunt 24H Flash Pass (997 USDT)", "Standard Enterprise Deployment (5,000 USDT)"], key="scale_ph")
+        deployment_mode = st.selectbox("Select Access Tier", ["Success-Share Access Pass (197 USDT)", "Full Enterprise License (5,000 USDT)"], key="scale_ph_success")
         
-    if st.button("Initialize PH Secure Escrow Diagnostic"):
+    if st.button("Initialize Secure Blockchain Verification"):
         if niche:
-            target_amount = 997 if "997" in deployment_mode else 5000
-            with st.spinner("Connecting to secure decentralized nodes..."):
-                st.markdown(f"""
-                ### Verified Infrastructure Report for `{niche}`
-                - **Selected Mode:** `{deployment_mode}`
-                - **Official Escrow / Operational Wallet:** `0xD7709Dc72614240B065416D17c662Ee124654c78` 
-                - **Required Verification Fund:** `{target_amount} USDT` (Triggers instant node allocation upon on-chain confirmation).
-                """)
-                
+            target_amount = 197 if "197" in deployment_mode else 5000
             wallet_address = "0xD7709Dc72614240B065416D17c662Ee124654c78"
             usdt_contract = "0x55d398326f99059ff775485246999027b3197955"
-            url = f"https://api.bscscan.com/api?module=account&action=tokentx&contractaddress={usdt_contract}&address={wallet_address}&page=1&offset=1&sort=desc"
+            
+            with st.spinner("Connecting to BSC decentralized nodes and checking transaction hashes..."):
+                st.markdown(f"""
+                ### 🧾 Active Escrow Node Report for `{niche}`
+                - **Selected Package:** `{deployment_mode}`
+                - **Destination Escrow Wallet:** `{wallet_address}`
+                - **Required Verification Deposit:** `{target_amount} USDT` (BEP-20)
+                """)
+                
+                url = f"https://api.bscscan.com/api?module=account&action=tokentx&contractaddress={usdt_contract}&address={wallet_address}&page=1&offset=1&sort=desc"
 
-            try:
-                response = requests.get(url, timeout=10).json()
-                if response.get('status') == '1' and len(response.get('result', [])) > 0:
-                    last_tx = response['result'][0]
-                    if last_tx['to'].lower() == wallet_address.lower():
-                        if int(last_tx['value']) >= target_amount * 10**18:
-                            st.success(f"Verified: Launch funds ({target_amount} USDT) received successfully! Node is live.")
+                try:
+                    response = requests.get(url, timeout=10).json()
+                    if response.get('status') == '1' and len(response.get('result', [])) > 0:
+                        last_tx = response['result'][0]
+                        if last_tx['to'].lower() == wallet_address.lower():
+                            tx_value = int(last_tx['value']) / 10**18
+                            if tx_value >= target_amount:
+                                st.success(f"Verified On-Chain: Entry funds ({tx_value} USDT) received successfully! Success-share node is live.")
+                                st.balloons()
+                            else:
+                                st.info(f"Transaction detected on-chain ({tx_value} USDT), but it's below the required {target_amount} USDT threshold.")
                         else:
-                            st.info(f"Transaction detected on-chain, but amount is below the {target_amount} USDT threshold.")
+                            st.warning("System Status: Awaiting deployment transaction to the official escrow address.")
                     else:
-                        st.info("System Status: Awaiting deployment transaction to the official escrow address.")
-                else:
-                    st.info("System Status: Awaiting deployment transaction to the official escrow address.")
-            except Exception as e:
-                st.info("System Status: Awaiting deployment transaction to the official escrow address.")
+                        st.warning("System Status: Awaiting deployment transaction to the official escrow address. Send exact USDT to verify instantly.")
+                except Exception as e:
+                    st.warning("System Status: Awaiting deployment transaction to the official escrow address (Network check active).")
         else:
             st.warning("Please enter your industry/niche first.")
 
@@ -116,7 +121,7 @@ with tab3:
         <div style="background-color: #e8f5e9; border-left: 5px solid #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <h3 style="color: #2e7d32; margin-top: 0;">🚀 Exponential Tiered Loop Active!</h3>
             <p style="color: #388e3c; font-weight: bold;">
-                Unlock the <b>Tiered Yield Multiplier</b>: Your commission automatically scales from 20% up to 40% (2,000 USDT per referral) as your network expands daily. The more you bring, the higher your multiplier!
+                Unlock the <b>Tiered Yield Multiplier</b>: Your commission automatically scales from 20% up to 40% as your network expands daily.
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -126,41 +131,41 @@ with tab3:
     if st.button("Activate Exponential Tracking Node"):
         if user_email:
             ref_code = hashlib.md5(user_email.encode()).hexdigest()[:8]
-            ref_link = f"https://growthengine-9btijzf8jcijy9hfqufsbu.streamlit.app/?ref={ref_code}&tier=exponential"
+            ref_link = f"https://growthengine-9btijzf8jcijy9hfqufsbu.streamlit.app/?ref={ref_code}&tier=success_share"
             
-            st.success("Exponential tracking node locked successfully!")
+            st.success("Exponential tracking node locked and secured successfully!")
             st.markdown(f"**Your Tier-1 Multiplier Link:** `{ref_link}`")
             
             st.markdown("""
                 <div style="background: #1e1e1e; color: #4caf50; padding: 20px; border-radius: 12px; margin-top: 20px; border: 2px solid #4caf50;">
                     <div style="font-size: 16px; color: #fff; margin-bottom: 5px;">📊 Current Node Status: <span style="color: #4caf50;">Tier 1 Active (20% Yield)</span></div>
-                    <div style="font-size: 14px; color: #ccc;">Bring just 2 referrals to auto-upgrade to Tier 2 (30% Yield / 1,500 USDT each). Bring 5 to unlock Tier 3 (40% Yield / 2,000 USDT each)!</div>
+                    <div style="font-size: 14px; color: #ccc;">Bring just 2 referrals to auto-upgrade to Tier 2 (30% Yield). Bring 5 to unlock Tier 3 (40% Yield / Max Payout)!</div>
                 </div>
             """, unsafe_allow_html=True)
             
-            st.warning("🔥 **Growth Command:** Share your link across all professional networks right now. Your multiplier increases automatically with every verified conversion!")
+            st.warning("🔥 **Growth Command:** Share your link across all professional networks right now to multiply your earnings automatically with every conversion!")
         else:
             st.warning("Please enter a partner ID or email first.")
 
 with tab4:
     st.subheader("🤖 Autonomous AI Support & Objection Handler (Gemini Powered)")
-    st.markdown("Directly powered by Google Gemini intelligence to handle any technical inquiry.")
+    st.markdown("Directly powered by Google Gemini intelligence to handle any technical inquiry or objection instantly.")
     
-    visitor_objection = st.text_input("Enter visitor question or doubt:")
+    visitor_objection = st.text_input("Enter visitor question or doubt:", key="visitor_obj_input")
     
     if st.button("Generate Intelligent Response"):
         if visitor_objection:
             with st.spinner("Analyzing inquiry with advanced Gemini intelligence..."):
                 try:
                     model = genai.GenerativeModel('gemini-1.5-pro')
-                    prompt = f"You are a professional technical expert for GrowthEngine. Answer this visitor objection authoritatively and transparently about our blockchain acquisition system: {visitor_objection}"
+                    prompt = f"You are a professional technical expert and closing architect for GrowthEngine. Answer this visitor objection authoritatively, clearly, and transparently about our 197 USDT success-share model: {visitor_objection}"
                     
                     response = model.generate_content(prompt)
                     ai_reply = response.text
                     
                     st.success("AI Intelligence Response Generated:")
                     st.markdown(f"""
-                    <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; color: #31333F;">
+                    <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; color: #31333F; line-height: 1.6;">
                         {ai_reply}
                     </div>
                     """, unsafe_allow_html=True)
