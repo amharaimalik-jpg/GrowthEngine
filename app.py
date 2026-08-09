@@ -1,8 +1,6 @@
 import streamlit as st
-import requests
 import hashlib
 import random
-import time
 
 st.set_page_config(page_title="GrowthEngine: Sovereign Master Protocol", layout="wide", initial_sidebar_state="collapsed")
 
