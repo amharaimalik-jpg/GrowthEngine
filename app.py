@@ -4,7 +4,7 @@ import hashlib
 
 st.set_page_config(page_title="GrowthEngine Viral System", layout="wide")
 
-# شريط الترحيب الحصري لزوار Product Hunt
+# Professional English Welcome Message for Product Hunt
 st.markdown("""
     <div style="background-color: #ff6154; padding: 15px; border-radius: 10px; text-align: center; color: white; margin-bottom: 20px;">
         <h2>🚀 Welcome Product Hunt Community!</h2>
@@ -12,43 +12,42 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-st.title("نظام الاستحواذ والانتشار الذاتي (المنظومة الحقيقية بالعمولات)")
-st.markdown("منصة هندسية حقيقية تتضمن أداة فحص، نظام تتبع البلوكتعين، ونظام الإحالة التسويقي (20% للعملاء المسوقين).")
+st.title("GrowthEngine: Automated Acquisition & Viral System")
+st.markdown("A real-world engineering platform featuring gap analysis, blockchain tracking, and a viral referral system (20% commission for promoters).")
 
-tab1, tab2, tab3 = st.tabs(["فحص الفجوات (جذب العملاء)", "محرك الاستحواذ والدفع", "نظام الانتشار والإحالات (عائد 20%)"])
+tab1, tab2, tab3 = st.tabs(["Web-Gap Analysis", "Acquisition & Conversion Engine", "Viral Referral System (20% Yield)"])
 
 with tab1:
-    st.subheader("أداة الفحص السريع المجانية")
-    target_url = st.text_input("أدخل رابط الموقع المستهدف لفحصه")
-    if st.button("فحص الفجوات مجاناً"):
+    st.subheader("Free Quick Gap Analysis")
+    target_url = st.text_input("Enter the target company URL")
+    if st.button("Run Gap Analysis"):
         if target_url:
-            st.success("تم تحليل الموقع وتحديد الفجوات بنجاح!")
+            st.success("Website analyzed successfully!")
             st.markdown(f"""
-            ### تقرير الفجوات لـ `{target_url}`
-            - **الحالة:** تم رصد خسائر تشغيلية يومية.
-            - **الحل:** انتقل إلى تبويب (محرك الاستحواذ) لتفعيل النظام المالي الحقيقي وفلترة العملاء.
+            ### Gap Report for `{target_url}`
+            - **Status:** Daily operational losses detected.
+            - **Solution:** Proceed to the 'Acquisition & Conversion' tab to activate the real financial system and filter your leads.
             """)
         else:
-            st.warning("يرجى إدخال الرابط أولاً.")
+            st.warning("Please enter a URL first.")
 
 with tab2:
-    st.subheader("محرك الاستحواذ والتحويل المالي الحقيقي (5,000 USDT)")
+    st.subheader("Financial Acquisition Engine (5,000 USDT)")
     coll, col2 = st.columns(2)
     with coll:
-        niche = st.text_input("مجال الشركة المستهدفة", key="niche_k")
+        niche = st.text_input("Target Company Niche", key="niche_k")
     with col2:
-        company_size = st.selectbox("حجم النشاط", ["منشأة كبرى", "متوسطة", "ناشئة"], key="size_k")
+        company_size = st.selectbox("Company Size", ["Enterprise", "Mid-size", "Startup"], key="size_k")
         
-    if st.button("تشغيل محرك التشخيص وفحص البلوكتشين"):
+    if st.button("Execute Diagnostic & Blockchain Scan"):
         if niche:
-            with st.spinner("جاري فحص البلوكتشين الحقيقي..."):
+            with st.spinner("Executing real-time blockchain scan..."):
                 st.markdown(f"""
-                ### التقرير الذكي لنشاط `{niche}`
-                - **الحالة:** تم تجهيز أصول الاستحواذ بالكامل.
-                - **المحفظة المراقب طلبها:** `0xD7709Dc72614240B065416D17c662Ee124654c78` (مطلوب 5,000 USDT).
+                ### Smart Report for `{niche}`
+                - **Status:** Acquisition assets fully prepared.
+                - **Monitored Wallet:** `0xD7709Dc72614240B065416D17c662Ee124654c78` (Target: 5,000 USDT).
                 """)
                 
-            # فحص البلوكتشين الحقيقي عبر BSCScan
             wallet_address = "0xD7709Dc72614240B065416D17c662Ee124654c78"
             usdt_contract = "0x55d398326f99059ff775485246999027b3197955"
             url = f"https://api.bscscan.com/api?module=account&action=tokentx&contractaddress={usdt_contract}&address={wallet_address}&page=1&offset=1&sort=desc"
@@ -59,34 +58,33 @@ with tab2:
                     last_tx = response['result'][0]
                     if last_tx['to'].lower() == wallet_address.lower():
                         if int(last_tx['value']) >= 5000 * 10**18:
-                            st.success("تم استلام التحويل الحقيقي بنجاح!")
+                            st.success("Financial transfer successfully confirmed!")
                         else:
-                            st.info("المعاملة موجودة، لكن المبلغ أقل من الحد المطلوب.")
+                            st.info("Transaction detected, but amount is below the required threshold.")
                     else:
-                        st.info("حالة النظام المالي: في انتظار التحويل على المحفظة الحقيقية.")
+                        st.info("System status: Waiting for transfer to the official wallet.")
                 else:
-                    st.info("جاري مراقبة البلوكتشين...")
+                    st.info("Monitoring blockchain...")
             except Exception as e:
-                st.info("جاري مراقبة البلوكتشين...")
+                st.info("Monitoring blockchain...")
         else:
-            st.warning("يرجى إدخال المجال أولاً.")
+            st.warning("Please enter a niche first.")
 
 with tab3:
-    st.subheader("نظام الانتشار الذاتي وتوليد روابط الإحالة (عائد 20%)")
-    st.markdown("هنا يتم تحويل كل عميل إلى مسوق لنظامك تلقائياً.")
+    st.subheader("Viral Referral System (20% Commission)")
+    st.markdown("Turn every lead into a marketer for your system automatically.")
     
-    user_email = st.text_input("أدخل بريدك أو معرفك لتوليد رابط الإحالة الخاص بك")
-    if st.button("توليد رابط المشاركة الخاص بي"):
+    user_email = st.text_input("Enter your email or ID to generate your referral link")
+    if st.button("Generate My Referral Link"):
         if user_email:
-            # توليد كود إحالة فريد بناءً على مدخلات المستخدم
             ref_code = hashlib.md5(user_email.encode()).hexdigest()[:8]
             ref_link = f"https://your-app-url.streamlit.app/?ref={ref_code}"
             
-            st.success("تم إنشاء رابط الانتشار الخاص بك بنجاح!")
+            st.success("Referral link generated successfully!")
             st.markdown(f"""
-            - **رابط الإحالة الخاص بك:** `{ref_link}`
-            - **عائد 20% (1,000 USDT) عبر رابطك،** تحصيل فوراً على عملتك USDT آلية العمل: قم بمشاركة هذا الرابط مع أي عميل يعاني من نفس المشكلة. بمجرد أن يدخل ويتم صفقة الـ 5,000 USDT.
+            - **Your Referral Link:** `{ref_link}`
+            - **20% Yield (1,000 USDT) via your link.** Automatically paid in USDT. Share this link with anyone facing the same challenge. Once they close the 5,000 USDT deal, you get your share.
             """)
-            st.info("بهذه الميزة، يتحول أول 10 عملاء نيابة عنك لينتشر ككامل فريق تسويق لجلب عملاء جدد بدون أي تدخل منك.")
+            st.info("With this feature, your first 10 clients become your own marketing team, bringing in new business without you lifting a finger.")
         else:
-            st.warning("يرجى إدخال البريد أو المعرف أولاً.")
+            st.warning("Please enter an email or ID first.")
