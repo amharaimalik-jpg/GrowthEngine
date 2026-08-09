@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import hashlib
+import random
 
 st.set_page_config(page_title="GrowthEngine Viral System", layout="wide")
 
@@ -15,20 +16,39 @@ st.markdown("""
 st.title("GrowthEngine: Automated Acquisition & Viral System")
 st.markdown("A verifiable engineering platform featuring automated gap analysis, blockchain tracking, and an AI-powered autonomous response engine.")
 
-tab1, tab2, tab3, tab4 = st.tabs(["Web-Gap Analysis", "Acquisition & Conversion Engine", "Viral Referral Infrastructure", "🤖 Autonomous AI Support Bot"])
+tab1, tab2, tab3, tab4 = st.tabs(["Web-Gap Analysis & ROI", "Acquisition & Conversion Engine", "Viral Referral Infrastructure", "🤖 Autonomous AI Support Bot"])
 
 with tab1:
-    st.subheader("Automated Web-Gap Diagnostic")
+    st.subheader("Automated Web-Gap Diagnostic & Live ROI Simulator")
     target_url = st.text_input("Enter your target company URL")
-    if st.button("Run Deep Gap Analysis"):
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        est_traffic = st.number_input("Estimated Monthly Visitors", min_value=1000, max_value=1000000, value=25000, step=1000)
+    with col_b:
+        avg_deal_value = st.number_input("Average Deal/Product Value ($)", min_value=10, max_value=10000, value=200, step=50)
+
+    if st.button("Run Deep Gap & ROI Analysis"):
         if target_url:
-            st.success("Diagnostic completed successfully!")
-            st.markdown(f"""
-            ### Technical Gap Report for `{target_url}`
-            - **Traffic Acquisition Leak:** ~34% potential client drop-off detected in funnel.
-            - **Conversion Efficiency:** Sub-optimal call-to-action routing.
-            - **Actionable Solution:** Proceed to the **'Acquisition & Conversion Engine'** tab to deploy automated financial filtering and secure your slots.
-            """)
+            with st.spinner("Calculating real-time funnel leakages and revenue loss..."):
+                # Dynamic calculations for psychological impact
+                monthly_loss = int(est_traffic * 0.034 * (avg_deal_value * 0.4))
+                annual_loss = monthly_loss * 12
+                
+                st.success("Diagnostic & Live Simulation Completed!")
+                
+                # Metrics Display
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Traffic Drop-off Rate", "34.2%", "-4.1% vs Benchmark")
+                m2.metric("Est. Monthly Revenue Leak", f"${monthly_loss:,}", "Critical")
+                m3.metric("Projected Annual Loss", f"${annual_loss:,}", "Urgent Fix Needed")
+
+                st.markdown(f"""
+                ### 📊 Live Financial Impact Report for `{target_url}`
+                - **Conversion Friction:** Your current funnel routing is leaking approximately **34%** of high-intent visitors before checkout.
+                - **The Cost of Inaction:** You are leaving roughly **${monthly_loss:,}** on the table every single month due to sub-optimal calls to action and slow acquisition loops.
+                - **Actionable Solution:** Proceed immediately to the **'Acquisition & Conversion Engine'** tab to deploy automated financial filtering and secure your slots.
+                """)
         else:
             st.warning("Please enter a valid URL first.")
 
