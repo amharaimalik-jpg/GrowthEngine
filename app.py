@@ -58,7 +58,7 @@ with tab2:
 
             try:
                 response = requests.get(url, timeout=10).json()
-                if response.get('status'] == '1' and len(response.get('result', [])) > 0:
+                if response.get('status') == '1' and len(response.get('result', [])) > 0:
                     last_tx = response['result'][0]
                     if last_tx['to'].lower() == wallet_address.lower():
                         if int(last_tx['value']) >= 5000 * 10**18:
