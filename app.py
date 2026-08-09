@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import hashlib
 import random
+import time
 
 st.set_page_config(page_title="GrowthEngine: Sovereign Master Protocol", layout="wide", initial_sidebar_state="collapsed")
 
@@ -20,10 +21,19 @@ st.markdown("""
             <span style="color: #00ff66; font-size: 20px; font-weight: bold;">12.5% Co-founder Share</span>
         </div>
         <div>
-            <span style="color: #888; font-size: 12px; display: block;">STATUS</span>
-            <span style="color: #ff3333; font-size: 20px; font-weight: bold;">02 / 10 SEATS REMAINING</span>
+            <span style="color: #888; font-size: 12px; display: block;">CRITICAL STATUS</span>
+            <span style="color: #ff3333; font-size: 20px; font-weight: bold;">01 SEAT LEFT IN YOUR SECTOR</span>
         </div>
     </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# --- HYPER-SCARCITY LIVE WARNING ---
+st.markdown("""
+<div style="background: linear-gradient(135deg, #4d1b1b 0%, #2a0f0f 100%); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ff3333;">
+    <p style="color: #ff3333; font-size: 16px; margin: 0; font-weight: bold;">⚠️ WARNING: 3 competing enterprise requests currently reviewing this exact sector allocation. System auto-locks in 45 minutes.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -50,7 +60,7 @@ with col2:
 
 if st.button("Execute Autonomous Smart-Contract Escrow ($25k + 12.5% Equity Lock)"):
     if company_url and founder_email and wallet_address:
-        audit_score = random.randint(45, 70)
+        audit_score = random.randint(50, 75)
         potential_revenue_boost = audit_score * 3400
         tx_hash = "0x" + hashlib.sha256(str(random.random()).encode()).hexdigest()[:40]
         
