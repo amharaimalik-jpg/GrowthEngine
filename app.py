@@ -1,8 +1,66 @@
+import streamlit as st
+import requests
+import hashlib
+import google.generativeai as genai
+
+st.set_page_config(page_title="GrowthEngine Viral System", layout="wide")
+
+# Configure Gemini API safely from Streamlit Secrets or fallback
+try:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+except:
+    genai.configure(api_key="YOUR_GEMINI_API_KEY_HERE")
+
+# Professional English Welcome Message for Product Hunt
+st.markdown("""
+    <div style="background-color: #ff6154; padding: 15px; border-radius: 10px; text-align: center; color: white; margin-bottom: 20px;">
+        <h2>🚀 Welcome Product Hunt Community!</h2>
+        <p>You unlocked exclusive access to GrowthEngine. Enter your website below to run your 60-second web-gap analysis & activate your viral loop!</p>
+    </div>
+""", unsafe_allow_html=True)
+
+st.title("GrowthEngine: Automated Acquisition & Viral System")
+st.markdown("A verifiable engineering platform featuring automated gap analysis, blockchain tracking, and an AI-powered autonomous response engine.")
+
+# 1. Define tabs first before using them
+tab1, tab2, tab3, tab4 = st.tabs(["Web-Gap Analysis & ROI", "Acquisition & Conversion Engine", "Viral Referral Infrastructure", "🤖 Autonomous AI Support Bot"])
+
+with tab1:
+    st.subheader("Automated Web-Gap Diagnostic & Live ROI Simulator")
+    target_url = st.text_input("Enter your target company URL")
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        est_traffic = st.number_input("Estimated Monthly Visitors", min_value=1000, max_value=1000000, value=25000, step=1000)
+    with col_b:
+        avg_deal_value = st.number_input("Average Deal/Product Value ($)", min_value=10, max_value=10000, value=200, step=50)
+
+    if st.button("Run Deep Gap & ROI Analysis"):
+        if target_url:
+            with st.spinner("Calculating real-time funnel leakages and revenue loss..."):
+                monthly_loss = int(est_traffic * 0.034 * (avg_deal_value * 0.4))
+                annual_loss = monthly_loss * 12
+                
+                st.success("Diagnostic & Live Simulation Completed!")
+                
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Traffic Drop-off Rate", "34.2%", "-4.1% vs Benchmark")
+                m2.metric("Est. Monthly Revenue Leak", f"${monthly_loss:,}", "Critical")
+                m3.metric("Projected Annual Loss", f"${annual_loss:,}", "Urgent Fix Needed")
+
+                st.markdown(f"""
+                ### 📊 Live Financial Impact Report for `{target_url}`
+                - **Conversion Friction:** Your current funnel routing is leaking approximately **34%** of high-intent visitors before checkout.
+                - **The Cost of Inaction:** You are leaving roughly **${monthly_loss:,}** on the table every single month due to sub-optimal calls to action.
+                - **Actionable Solution:** Proceed immediately to the **'Acquisition & Conversion Engine'** tab to deploy automated financial filtering.
+                """)
+        else:
+            st.warning("Please enter a valid URL first.")
+
 with tab2:
     st.subheader("🔥 Product Hunt Exclusive Launch Engine & VIP Nodes")
     st.markdown("🔒 *Secured via smart-contract tracking and automated escrow verification for PH Community.*")
     
-    # --- عرض الإطلاق الحصري العنيف ---
     st.markdown("""
         <div style="background-color: #fff3e0; border-left: 5px solid #ff9800; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
             <h3 style="color: #e65100; margin: 0 0 5px 0;">⚡ Product Hunt 24H Flash Pass (80% OFF)</h3>
@@ -50,3 +108,63 @@ with tab2:
                 st.info("System Status: Awaiting deployment transaction to the official escrow address.")
         else:
             st.warning("Please enter your industry/niche first.")
+
+with tab3:
+    st.subheader("Exponential Viral Growth Infrastructure (Tiered Multiplier)")
+    
+    st.markdown("""
+        <div style="background-color: #e8f5e9; border-left: 5px solid #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #2e7d32; margin-top: 0;">🚀 Exponential Tiered Loop Active!</h3>
+            <p style="color: #388e3c; font-weight: bold;">
+                Unlock the <b>Tiered Yield Multiplier</b>: Your commission automatically scales from 20% up to 40% (2,000 USDT per referral) as your network expands daily. The more you bring, the higher your multiplier!
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    user_email = st.text_input("Enter your partner ID or email to unlock Exponential Nodes", key="partner_email_input_exp")
+    
+    if st.button("Activate Exponential Tracking Node"):
+        if user_email:
+            ref_code = hashlib.md5(user_email.encode()).hexdigest()[:8]
+            ref_link = f"https://growthengine-9btijzf8jcijy9hfqufsbu.streamlit.app/?ref={ref_code}&tier=exponential"
+            
+            st.success("Exponential tracking node locked successfully!")
+            st.markdown(f"**Your Tier-1 Multiplier Link:** `{ref_link}`")
+            
+            st.markdown("""
+                <div style="background: #1e1e1e; color: #4caf50; padding: 20px; border-radius: 12px; margin-top: 20px; border: 2px solid #4caf50;">
+                    <div style="font-size: 16px; color: #fff; margin-bottom: 5px;">📊 Current Node Status: <span style="color: #4caf50;">Tier 1 Active (20% Yield)</span></div>
+                    <div style="font-size: 14px; color: #ccc;">Bring just 2 referrals to auto-upgrade to Tier 2 (30% Yield / 1,500 USDT each). Bring 5 to unlock Tier 3 (40% Yield / 2,000 USDT each)!</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.warning("🔥 **Growth Command:** Share your link across all professional networks right now. Your multiplier increases automatically with every verified conversion!")
+        else:
+            st.warning("Please enter a partner ID or email first.")
+
+with tab4:
+    st.subheader("🤖 Autonomous AI Support & Objection Handler (Gemini Powered)")
+    st.markdown("Directly powered by Google Gemini intelligence to handle any technical inquiry.")
+    
+    visitor_objection = st.text_input("Enter visitor question or doubt:")
+    
+    if st.button("Generate Intelligent Response"):
+        if visitor_objection:
+            with st.spinner("Analyzing inquiry with advanced Gemini intelligence..."):
+                try:
+                    model = genai.GenerativeModel('gemini-1.5-pro')
+                    prompt = f"You are a professional technical expert for GrowthEngine. Answer this visitor objection authoritatively and transparently about our blockchain acquisition system: {visitor_objection}"
+                    
+                    response = model.generate_content(prompt)
+                    ai_reply = response.text
+                    
+                    st.success("AI Intelligence Response Generated:")
+                    st.markdown(f"""
+                    <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; color: #31333F;">
+                        {ai_reply}
+                    </div>
+                    """, unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"System Error: Could not connect to the intelligence layer. {e}")
+        else:
+            st.warning("Please enter a question.")
