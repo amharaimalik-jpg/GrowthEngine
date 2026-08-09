@@ -25,3 +25,30 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# --- PRE-LAUNCH / MONOPOLY ACCESS PASS BANNER ---
+st.markdown("""
+<div style="background: linear-gradient(135deg, #1b4d3e 0%, #0f2a22 100%); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #00ff66;">
+    <h2 style="margin: 0; color: #ffffff; font-size: 24px;">🔒 Pre-Launch Sovereign Allocation Pass</h2>
+    <p style="color: #00ff66; font-size: 15px; margin-top: 5px; font-weight: bold;">Instant Infrastructure Wire ($25k) + 12.5% Equity Lock — Claim Your Sector Monopoly Now</p>
+</div>
+""", unsafe_allow_html=True)
+
+# --- SECTOR MONOPOLY APPLICATION FORM ---
+st.markdown("### **Secure Your Sovereign Sector Allocation**")
+company_url = st.text_input("Enter your company domain or project URL (e.g., yourstartup.com)")
+founder_email = st.text_input("Founder / CEO Secure Contact Email")
+
+col1, col2 = st.columns(2)
+with col1:
+    industry_sector = st.selectbox("Select Target Industry Sector", ["Fintech & Payments", "SaaS & Enterprise AI", "Digital Assets & Web3", "Logistics & Marketplace"])
+with col2:
+    current_valuation = st.text_input("Current Company Valuation / Funding Stage", "Seed / Pre-Revenue / Growth")
+
+if st.button("Transmit Sovereign Application ($25k + Equity Wire)"):
+    if company_url and founder_email:
+        st.success("Transmission received. Secure escrow channel and co-founder agreement dispatched to your secure communication line. Access restricted to verified wire originators.")
+    else:
+        st.error("Protocol Error: Complete all enterprise fields to initiate allocation review.")
