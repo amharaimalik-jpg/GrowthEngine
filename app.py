@@ -1,4 +1,10 @@
-# --- SOVEREIGN PROTOCOL HEADER (Replace standard banner in app.py) ---
+import streamlit as st
+import requests
+import hashlib
+
+st.set_page_config(page_title="GrowthEngine: Sovereign Master Protocol", layout="wide", initial_sidebar_state="collapsed")
+
+# --- SOVEREIGN PROTOCOL HEADER ---
 st.markdown("""
 <div style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); padding: 30px; border-radius: 16px; text-align: center; border: 2px solid #D4AF37; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);">
     <h1 style="margin: 0; font-size: 32px; color: #D4AF37; font-family: monospace;">👑 GrowthEngine: Sovereign Master Protocol</h1>
