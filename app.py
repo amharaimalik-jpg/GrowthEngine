@@ -75,22 +75,22 @@ if st.button("Execute Autonomous Smart-Contract Escrow ($25k + 12.5% Equity Lock
         st.error("Protocol Error: Fill in domain, secure email, and wallet address to execute smart-contract settlement.")
         import streamlit as st
 
-# --- الشريط الجانبي للتواصل المباشر ---
+# --- الشريط الجانبي: وضع بريدك المباشر ---
 st.sidebar.markdown("---")
-st.sidebar.subheader("Contact for Partnership")
-st.sidebar.write("If you are a founder and want to audit your stack:")
+st.sidebar.subheader("Founder Connection")
+st.sidebar.write("Got questions or looking to partner?")
 st.sidebar.markdown("📧 **[your-email@example.com](mailto:your-email@example.com)**")
 
-# --- نموذج جمع البريد الإلكتروني (في الواجهة الرئيسية أو المكان الذي تفضله) ---
+# --- نهاية الصفحة: نموذج جمع البريد الإلكتروني للمهتمين ---
 st.markdown("---")
 with st.form("contact_form"):
-    st.write("### Get the full architecture breakdown")
+    st.write("### Want the complete audit framework?")
     email = st.text_input("Enter your business email")
-    submitted = st.form_submit_button("Send me the data")
+    submitted = st.form_submit_button("Get Access")
     
     if submitted:
         if email:
-            st.success(f"Thanks! I'll send the audit breakdown to {email} soon.")
-            # يمكنك لاحقاً ربط هذه الخطوة بحفظ الإيميل في قاعدة بيانات أو ملف
+            st.success(f"Thank you! We'll send the architecture details to {email}.")
+            # ملاحظة: يمكنك لاحقاً ربط هذا الحقل بقاعدة بيانات أو استقباله عبر البريد
         else:
-            st.error("Please enter a valid email.")
+            st.error("Please enter a valid email address.")
