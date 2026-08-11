@@ -3,16 +3,32 @@ import time
 
 # 1. إعدادات الصفحة
 st.set_page_config(
-    page_title="GrowthEngine: Automated Audit & One-Click Fix",
+    page_title="GrowthEngine: Automated Audit & Instant Fix",
     page_icon="⚡",
     layout="wide"
 )
 
-# 2. الواجهة الرئيسية (تحويل من جدار الدفع إلى الخدمة الفورية)
+# 2. حقن CSS لدعم الاتجاه من اليمين إلى اليسار (RTL) بشكل احترافي
+st.markdown("""
+    <style>
+    /* ضبط الاتجاه العام للغة العربية */
+    html, body, [class*="st-"], .stTextInput input, p, div, h1, h2, h3, h4 {
+        direction: rtl !important;
+        text-align: right !important;
+    }
+    /* استثناء صناديق الأكواد لتبقى LTR */
+    code, pre {
+        direction: ltr !important;
+        text-align: left !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# 3. الواجهة الرئيسية
 st.title("⚡ GrowthEngine: Autonomous Web Audit & Instant Fix")
 st.caption("افحص موقعك مجاناً، احصل على كود الإصلاح الفوري، وقم بتوثيق أدائك.")
 
-# 3. إدخال رابط الموقع للتحليل
+# 4. إدخال رابط الموقع
 url_input = st.text_input("أدخل رابط موقعك أو متجرك الإلكتروني للتحليل:", placeholder="https://example.com")
 
 if st.button("بدء الفحص الآلي الشامل", type="primary"):
@@ -32,14 +48,14 @@ if st.button("بدء الفحص الآلي الشامل", type="primary"):
 
         st.markdown("---")
         
-        # 4. الثغرات والمشاكل المكتشفة
+        # 5. الثغرات والمشاكل المكتشفة
         st.subheader("⚠️ المشاكل المكتشفة:")
         st.warning("1. الصور غير مضغوطة وتتسبب في بطء التحميل على الهواتف.")
         st.warning("2. غياب كود التخزين المؤقت (Browser Caching) للزوار الجدد.")
         
         st.markdown("---")
         
-        # 5. ميزة الإصلاح الفوري وشارة التوثيق الفيروسية
+        # 6. ميزة الإصلاح الفوري وشارة التوثيق الفيروسية
         st.subheader("🛠️ الإصلاح الفوري بنقرة واحدة (One-Click Auto-Fix)")
         
         tab1, tab2 = st.tabs(["🚀 الفتح الفوري عبر شارة التوثيق (مجاناً)", "🔗 التفعيل عبر المنصات الشريكة"])
@@ -69,6 +85,5 @@ if st.button("بدء الفحص الآلي الشامل", type="primary"):
 
         with tab2:
             st.write("أو قم بتفعيل حل الاستضافة والسحابة الفورية عبر شريكنا المعتمد للحصول على إصلاح تلقائي كامل:")
-            # رابط الشريك الحامل للعمولة
             affiliate_link = "https://www.partner-platform.com/signup?aff_id=YOUR_PARTNER_ID"
             st.markdown(f'👉 [اضغط هنا لتفعيل الترقيع السحابي المباشر عبر الشريك]({affiliate_link})')
