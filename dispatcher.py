@@ -1,55 +1,66 @@
 import sqlite3
-import pandas as pd
+import requests
+import json
+import os
 
-def get_leads_for_outreach(min_score_threshold=80):
-    """استخراج المتاجر التي تعاني من مشاكل في الأداء (تقييم أقل من 80)"""
+# إعدادات API لمنصة Brevo
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "YOUR_BREVO_API_KEY_HERE")
+BREVO_URL = "https://api.brevo.com/v3/smtp/email"
+
+def send_automated_outreach():
+    # الاتصال بقاعدة البيانات واستخراج المتاجر التي تعاني من بطء في الأداء
     conn = sqlite3.connect("growth_data.db")
+    cursor = conn.cursor()
     
-    query = """
-    SELECT domain, score, latency, audit_url 
-    FROM audits 
-    WHERE score < ? 
-    ORDER BY score ASC
-    """
-    
-    df = pd.read_sql_query(query, conn, params=(min_score_threshold,))
-    conn.close()
-    return df
+    cursor.execute("""
+        SELECT domain, score, latency, audit_url, email 
+        FROM audits 
+        WHERE score < 80 AND (status IS NULL OR status != 'sent')
+    """)
+    leads = cursor.fetchall()
 
-def generate_outreach_campaign():
-    leads = get_leads_for_outreach()
-    print(f"🎯 Found {len(leads)} potential leads with performance issues.\n")
-    
-    campaign_data = []
-    
-    for idx, row in leads.iterrows():
-        domain = row['domain']
-        score = row['score']
-        latency = row['latency']
-        audit_link = row['audit_url']
+    if not leads:
+        print("لا يوجد عملاء جدد بحاجة للتواصل الآن.")
+        conn.close()
+        return
+
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    for domain, score, latency, audit_url, email in leads:
+        if not email or "@" not in email:
+            continue
+
+        # تجهيز الرسالة الديناميكية المخصصة لكل متجر
+        payload = {
+            "sender": {"name": "GrowthEngine Systems", "email": "audit@growthengine.auto"},
+            "to": [{"email": email}],
+            "subject": f"Automated Speed & Optimization Audit for {domain}",
+            "htmlContent": f"""
+                <h3>Performance Alert for {domain}</h3>
+                <p>An automated performance audit detected optimization bottlenecks on your website:</p>
+                <ul>
+                    <li><b>Performance Score:</b> {score}/100</li>
+                    <li><b>Response Latency:</b> {latency}s</li>
+                </ul>
+                <p>Review your full diagnostic report and instant resolution setup here:</p>
+                <p><a href="{audit_url}" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">View Diagnostic Report</a></p>
+            """
+        }
+
+        response = requests.post(BREVO_URL, json=payload, headers=headers)
         
-        # صيغة الرسالة المؤثرة المستهدفة للعميل
-        message = (
-            f"Hello {domain} team,\n\n"
-            f"We performed an automated health check on your store and detected a latency of {latency}s "
-            f"with an overall performance score of {score}%.\n\n"
-            f"You can view your live diagnostic report and performance fixes here:\n"
-            f"{audit_link}\n\n"
-            f"Best regards,\nGrowthEngine Automation"
-        )
-        
-        campaign_data.append({
-            "domain": domain,
-            "score": score,
-            "latency": latency,
-            "audit_link": audit_link,
-            "message_body": message
-        })
-        
-    # حفظ الحملة في ملف CSV لتنفيذ الإرسال الجماعي
-    campaign_df = pd.DataFrame(campaign_data)
-    campaign_df.to_csv("outreach_campaign_leads.csv", index=False)
-    print("✅ Outreach campaign generated successfully: 'outreach_campaign_leads.csv'")
+        if response.status_code in [200, 201]:
+            print(f"تم إرسال التقرير بنجاح إلى: {email}")
+            cursor.execute("UPDATE audits SET status = 'sent' WHERE domain = ?", (domain,))
+        else:
+            print(f"فشل الإرسال إلى {email}: {response.text}")
+
+    conn.commit()
+    conn.close()
 
 if __name__ == "__main__":
-    generate_outreach_campaign()
+    send_automated_outreach()
