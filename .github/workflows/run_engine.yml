@@ -5,6 +5,9 @@ on:
     - cron: '0 12 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
@@ -33,6 +36,6 @@ jobs:
       run: |
         git config --global user.name "GrowthEngine Automation Bot"
         git config --global user.email "bot@growthengine.auto"
-        git add growth_data.db outreach_campaign_leads.csv
-        git commit -m "Auto-update: Mass Audit & Outreach Leads [skip ci]" || exit 0
+        git add growth_data.db outreach_campaign_leads.csv || true
+        git commit -m "Auto-update: Mass Audit & Outreach Leads [skip ci]" || echo "No changes to commit"
         git push
