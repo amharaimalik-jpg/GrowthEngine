@@ -73,3 +73,24 @@ if st.button("Execute Autonomous Smart-Contract Escrow ($25k + 12.5% Equity Lock
         """, unsafe_allow_html=True)
     else:
         st.error("Protocol Error: Fill in domain, secure email, and wallet address to execute smart-contract settlement.")
+        import streamlit as st
+
+# --- الشريط الجانبي للتواصل المباشر ---
+st.sidebar.markdown("---")
+st.sidebar.subheader("Contact for Partnership")
+st.sidebar.write("If you are a founder and want to audit your stack:")
+st.sidebar.markdown("📧 **[your-email@example.com](mailto:your-email@example.com)**")
+
+# --- نموذج جمع البريد الإلكتروني (في الواجهة الرئيسية أو المكان الذي تفضله) ---
+st.markdown("---")
+with st.form("contact_form"):
+    st.write("### Get the full architecture breakdown")
+    email = st.text_input("Enter your business email")
+    submitted = st.form_submit_button("Send me the data")
+    
+    if submitted:
+        if email:
+            st.success(f"Thanks! I'll send the audit breakdown to {email} soon.")
+            # يمكنك لاحقاً ربط هذه الخطوة بحفظ الإيميل في قاعدة بيانات أو ملف
+        else:
+            st.error("Please enter a valid email.")
