@@ -96,20 +96,25 @@ if st.button("Start Autonomous Audit", type="primary"):
 from collector import fetch_site_data
 from engine import analyze_performance
 
-# 1. قراءة النطاق المستهدف تلقائياً من رابط الصفحة إذا وجد (e.g. ?target=https://example.com)
-query_params = st.query_params
-default_url = query_params.get("target", "https://www.gymshark.com")
+# 1. إعدادات الصفحة الرئيسية
+st.set_page_config(page_title="GrowthEngine Audit", page_icon="⚡", layout="wide")
 
+# 2. استخراج النطاق المستهدف من رابط URL إن وجد
+query_params = st.query_params
+default_url = query_params.get("target", "")
+
+# 3. عرض الواجهة الرئيسية (مرة واحدة فقط)
 st.title("⚡ GrowthEngine: Autonomous Web Audit & Instant Fix")
 st.write("Perform live HTTP diagnostics, uncover actual performance bottlenecks, and deploy instant optimization patches.")
 
-# 2. حقل إدخال الرابط محمل آلياً بالنطاق المستهدف
-target_url = st.text_input("Enter your website or store URL:", value=default_url)
+target_url = st.text_input("Enter your website or store URL:", value=default_url, placeholder="https://example.com")
 
-# 3. التشغيل الآلي فور دخول الزائر من رابط مخصص
-auto_run = "target" in query_params
+# 4. آلية التحقق للتشغيل الآلي بدون تكرار
+auto_run = bool(default_url) and "evaluated" not in st.session_state
 
 if st.button("Start Autonomous Audit") or auto_run:
+    st.session_state["evaluated"] = True
+    
     if target_url:
         with st.spinner("Analyzing live server latency and response headers..."):
             raw_data = fetch_site_data(target_url)
@@ -117,17 +122,18 @@ if st.button("Start Autonomous Audit") or auto_run:
             
             st.success(f"Live audit completed successfully for: {target_url}")
             
-            # عرض المؤشرات الرئيسية
             col1, col2, col3 = st.columns(3)
-            col1.metric("Live Server Latency", f"{raw_data['latency']}s", "HTTP Response Time")
-            col2.metric("Audit Health Score", f"{results['score']}%", f"HTTP Status {raw_data['status_code']}")
-            col3.metric("Browser Caching", results["caching_status"], "Cache-Control Directive")
+            col1.metric("Live Server Latency", f"{raw_data.get('latency', 0)}s", "HTTP Response Time")
+            col2.metric("Audit Health Score", f"{results.get('score', 0)}%", f"HTTP Status {raw_data.get('status_code', 200)}")
+            col3.metric("Browser Caching", results.get("caching_status", "N/A"), "Cache-Control Directive")
             
             st.markdown("---")
             st.subheader("⚠️ Detected Bottlenecks & Code Vulnerabilities:")
             
-            if results["issues"]:
+            if results.get("issues"):
                 for issue in results["issues"]:
                     st.warning(issue)
             else:
                 st.success("Excellent! No critical server-side network issues detected.")
+    else:
+        st.error("Please enter a valid URL.")
