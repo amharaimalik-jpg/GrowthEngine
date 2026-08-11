@@ -92,7 +92,10 @@ if st.button("Start Autonomous Audit", type="primary"):
 
             except Exception as e:
                 st.error(f"Could not reach target server. Please check if the URL is active and accessible. Error: {str(e)}")
-                import streamlit as st
+               عرض الواجهة الرئيسية (مرة واحدة فقط)
+st.title("⚡ GrowthEngine: Autonomous Web Audit & Instant Fix")
+st.write("Perform live HTTP diagnostics, uncover actual performance bottlenecks, and deploy instant optimization patches.")
+import streamlit as st
 from collector import fetch_site_data
 from engine import analyze_performance
 
