@@ -92,3 +92,42 @@ if st.button("Start Autonomous Audit", type="primary"):
 
             except Exception as e:
                 st.error(f"Could not reach target server. Please check if the URL is active and accessible. Error: {str(e)}")
+                import streamlit as st
+from collector import fetch_site_data
+from engine import analyze_performance
+
+# 1. قراءة النطاق المستهدف تلقائياً من رابط الصفحة إذا وجد (e.g. ?target=https://example.com)
+query_params = st.query_params
+default_url = query_params.get("target", "https://www.gymshark.com")
+
+st.title("⚡ GrowthEngine: Autonomous Web Audit & Instant Fix")
+st.write("Perform live HTTP diagnostics, uncover actual performance bottlenecks, and deploy instant optimization patches.")
+
+# 2. حقل إدخال الرابط محمل آلياً بالنطاق المستهدف
+target_url = st.text_input("Enter your website or store URL:", value=default_url)
+
+# 3. التشغيل الآلي فور دخول الزائر من رابط مخصص
+auto_run = "target" in query_params
+
+if st.button("Start Autonomous Audit") or auto_run:
+    if target_url:
+        with st.spinner("Analyzing live server latency and response headers..."):
+            raw_data = fetch_site_data(target_url)
+            results = analyze_performance(raw_data)
+            
+            st.success(f"Live audit completed successfully for: {target_url}")
+            
+            # عرض المؤشرات الرئيسية
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Live Server Latency", f"{raw_data['latency']}s", "HTTP Response Time")
+            col2.metric("Audit Health Score", f"{results['score']}%", f"HTTP Status {raw_data['status_code']}")
+            col3.metric("Browser Caching", results["caching_status"], "Cache-Control Directive")
+            
+            st.markdown("---")
+            st.subheader("⚠️ Detected Bottlenecks & Code Vulnerabilities:")
+            
+            if results["issues"]:
+                for issue in results["issues"]:
+                    st.warning(issue)
+            else:
+                st.success("Excellent! No critical server-side network issues detected.")
