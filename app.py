@@ -1,80 +1,64 @@
 import streamlit as st
 import time
 
-# 1. إعدادات الصفحة
+# 1. Page Configuration
 st.set_page_config(
-    page_title="GrowthEngine: Automated Audit & Instant Fix",
+    page_title="GrowthEngine: Autonomous Web Audit & Instant Fix",
     page_icon="⚡",
     layout="wide"
 )
 
-# 2. حقن CSS لدعم الاتجاه من اليمين إلى اليسار (RTL) بشكل احترافي
-st.markdown("""
-    <style>
-    /* ضبط الاتجاه العام للغة العربية */
-    html, body, [class*="st-"], .stTextInput input, p, div, h1, h2, h3, h4 {
-        direction: rtl !important;
-        text-align: right !important;
-    }
-    /* استثناء صناديق الأكواد لتبقى LTR */
-    code, pre {
-        direction: ltr !important;
-        text-align: left !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# 3. الواجهة الرئيسية
+# 2. Main Header
 st.title("⚡ GrowthEngine: Autonomous Web Audit & Instant Fix")
-st.caption("افحص موقعك مجاناً، احصل على كود الإصلاح الفوري، وقم بتوثيق أدائك.")
+st.caption("Audit your website for free, generate instant patch scripts, and display your verified performance badge.")
 
-# 4. إدخال رابط الموقع
-url_input = st.text_input("أدخل رابط موقعك أو متجرك الإلكتروني للتحليل:", placeholder="https://example.com")
+# 3. URL Input
+url_input = st.text_input("Enter your website or store URL:", placeholder="https://example.com")
 
-if st.button("بدء الفحص الآلي الشامل", type="primary"):
+if st.button("Start Autonomous Audit", type="primary"):
     if not url_input:
-        st.error("يرجى إدخال رابط صحيح للبدء.")
+        st.error("Please enter a valid URL to begin.")
     else:
-        with st.spinner("جاري الاتصال بالمحرك وتحليل سرعة الاستجابة والأكواد..."):
+        with st.spinner("Connecting to core engine & analyzing page speeds, scripts, and headers..."):
             time.sleep(2)
         
-        st.success("تم اكتمال الفحص بنجاح!")
+        st.success("Audit complete!")
         
-        # عرض المؤشرات
+        # Metrics Display
         col1, col2, col3 = st.columns(3)
-        col1.metric("سرعة التحميل", "1.6s", "-0.8s (بطء استجابة)")
-        col2.metric("كفاءة الأكواد", "64%", "-36% فقدان عملاء")
-        col3.metric("مستوى الأمان", "متوسط", "تخزين مؤقت غير مفعّل")
+        col1.metric("Load Speed", "1.6s", "-0.8s (Latency Delay)")
+        col2.metric("Code Efficiency", "64%", "-36% Bounce Rate")
+        col3.metric("Security Level", "Moderate", "Caching Inactive")
 
         st.markdown("---")
         
-        # 5. الثغرات والمشاكل المكتشفة
-        st.subheader("⚠️ المشاكل المكتشفة:")
-        st.warning("1. الصور غير مضغوطة وتتسبب في بطء التحميل على الهواتف.")
-        st.warning("2. غياب كود التخزين المؤقت (Browser Caching) للزوار الجدد.")
+        # Identified Issues
+        st.subheader("⚠️ Critical Performance Bottlenecks:")
+        st.warning("1. Uncompressed assets and images causing mobile render delays.")
+        st.warning("2. Missing Browser Caching directives for returning visitors.")
         
         st.markdown("---")
         
-        # 6. ميزة الإصلاح الفوري وشارة التوثيق الفيروسية
-        st.subheader("🛠️ الإصلاح الفوري بنقرة واحدة (One-Click Auto-Fix)")
+        # One-Click Auto-Fix & Viral Proof Badge
+        st.subheader("🛠️ One-Click Auto-Fix Engine")
         
-        tab1, tab2 = st.tabs(["🚀 الفتح الفوري عبر شارة التوثيق (مجاناً)", "🔗 التفعيل عبر المنصات الشريكة"])
+        tab1, tab2 = st.tabs(["🚀 Instant Unlock via Proof Badge (Free)", "🔗 Partner Cloud Activation"])
         
         with tab1:
-            st.info("ضع شارة التوثيق التالية في تذييل (Footer) موقعك لفتح سكريبت الإصلاح المباشر مجاناً:")
+            st.info("Embed the verified badge snippet into your site's footer to instantly unlock your optimization patch script:")
             
             badge_code = f'''<!-- GrowthEngine Proof Badge -->
 <div id="growthengine-badge" style="text-align:center; padding:10px; font-family:sans-serif;">
   <a href="https://growthengine-9btijzf8jcjty9hfqufsbu.streamlit.app" target="_blank" style="text-decoration:none; color:#10B981; font-weight:bold;">
-    🛡️ موقع موثق ومحسّن بواسطة GrowthEngine
+    🛡️ Verified & Optimized by GrowthEngine
   </a>
 </div>'''
             
             st.code(badge_code, language="html")
             
-            if st.button("تأكيد وضع الشارة وفتح كود الإصلاح"):
+            if st.button("Confirm Badge Placement & Generate Patch"):
                 st.balloons()
-                st.success("تم التحقق! إليك سكريبت الترقيع المباشر لزرعه في موقعك:")
+                st.success("Badge placement verified! Here is your instant optimization patch script:")
                 
                 autofix_script = '''<script>
   // GrowthEngine Auto-Fix Patch v2.0
@@ -84,6 +68,6 @@ if st.button("بدء الفحص الآلي الشامل", type="primary"):
                 st.code(autofix_script, language="html")
 
         with tab2:
-            st.write("أو قم بتفعيل حل الاستضافة والسحابة الفورية عبر شريكنا المعتمد للحصول على إصلاح تلقائي كامل:")
+            st.write("Or activate direct cloud optimization via our verified infrastructure partner:")
             affiliate_link = "https://www.partner-platform.com/signup?aff_id=YOUR_PARTNER_ID"
-            st.markdown(f'👉 [اضغط هنا لتفعيل الترقيع السحابي المباشر عبر الشريك]({affiliate_link})')
+            st.markdown(f'👉 [Click here for Direct Cloud Partner Integration]({affiliate_link})')
